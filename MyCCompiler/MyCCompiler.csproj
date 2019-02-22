@@ -54,6 +54,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Antlr4 Include="C.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>MyCCompiler</CustomToolNamespace>
+    </Antlr4>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
