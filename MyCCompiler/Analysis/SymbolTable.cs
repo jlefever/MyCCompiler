@@ -5,20 +5,20 @@ namespace MyCCompiler.Analysis
     public class SymbolTable
     {
         public readonly SymbolTable Previous;
-        private readonly IDictionary<string, string> _table;
+        private readonly IDictionary<string, Symbol> _table;
 
         public SymbolTable(SymbolTable previous)
         {
             Previous = previous;
-            _table = new Dictionary<string, string>();
+            _table = new Dictionary<string, Symbol>();
         }
 
-        public void Put(string lexme, string type)
+        public void Put(Symbol symbol)
         {
-            _table.Add(lexme, type);
+            _table.Add(symbol.Lexme, symbol);
         }
 
-        public string Get(string lexme)
+        public Symbol Get(string lexme)
         {
             for (var st = this; st != null; st = st.Previous)
             {

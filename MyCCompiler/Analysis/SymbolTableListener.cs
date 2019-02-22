@@ -3,12 +3,12 @@
     public class SymbolTableListener : CBaseListener
     {
         private SymbolTable _currSymbolTable;
-        private string _currLexme;
-        private string _currType;
+        private Symbol _currSymbol;
 
         public SymbolTableListener()
         {
             _currSymbolTable = new SymbolTable(null);
+            _currSymbol = new Symbol();
         }
 
         public override void EnterCompoundStatement(CParser.CompoundStatementContext context)
@@ -23,22 +23,21 @@
 
         public override void ExitDeclaration(CParser.DeclarationContext context)
         {
-            _currSymbolTable.Put(_currLexme, _currType);
-            _currLexme = null;
-            _currType = null;
+            _currSymbolTable.Put(_currSymbol);
+            _currSymbol = new Symbol();
         }
 
         public override void ExitDirectDeclarator(CParser.DirectDeclaratorContext context)
         {
             if (context.Identifier() != null)
             {
-                _currLexme = context.Identifier().Symbol.Text;
+                _currSymbol.Lexme = context.Identifier().Symbol.Text;
             }
         }
 
         public override void ExitTypeSpecifier(CParser.TypeSpecifierContext context)
         {
-            _currType = context.GetText();
+            _currSymbol.Type = context.GetText();
         }
     }
 }
