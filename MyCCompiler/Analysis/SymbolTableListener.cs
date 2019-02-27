@@ -35,9 +35,9 @@
             }
         }
 
-        public override void ExitTypeSpecifier(CParser.TypeSpecifierContext context)
+        public override void ExitDeclarationSpecifiers(CParser.DeclarationSpecifiersContext context)
         {
-            _currSymbol.Type = context.GetText();
+            _currSymbol.Type = PrimitiveUtil.Map[context.GetText()];
         }
     }
 }
