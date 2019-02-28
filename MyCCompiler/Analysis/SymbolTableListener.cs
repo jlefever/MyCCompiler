@@ -37,7 +37,7 @@
 
         public override void ExitDeclarationSpecifiers(CParser.DeclarationSpecifiersContext context)
         {
-            _currSymbol.Type = PrimitiveUtil.Map[context.GetText()];
+            _currSymbol.Type = new Variable(EnumUtil.PrimitiveKindMap[context.GetText()]);
         }
     }
 }

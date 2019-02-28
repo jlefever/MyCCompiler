@@ -3,7 +3,7 @@
     public class Symbol
     {
         public string Lexme { get; set; }
-        public Primitive Type { get; set; }
+        public IType Type { get; set; }
 
         public override string ToString()
         {
