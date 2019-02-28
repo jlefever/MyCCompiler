@@ -6,7 +6,17 @@ namespace MyCCompiler.Analysis
 
     public class Pointer : IType
     {
-        public IType Type;
+        public IType Type { get; }
+
+        public Pointer(IType type)
+        {
+            Type = type;
+        }
+
+        public override string ToString()
+        {
+            return $"pointer-to-{Type}";
+        }
     }
 
     public class Variable : IType
@@ -16,7 +26,7 @@ namespace MyCCompiler.Analysis
         public Variable(PrimitiveKind primitiveKind)
         {
             PrimitiveKind = primitiveKind;
-        }        
+        }
 
         public override string ToString()
         {

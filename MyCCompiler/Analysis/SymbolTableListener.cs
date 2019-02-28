@@ -1,4 +1,6 @@
-﻿namespace MyCCompiler.Analysis
+﻿using System;
+
+namespace MyCCompiler.Analysis
 {
     public class SymbolTableListener : CBaseListener
     {
@@ -35,9 +37,28 @@
             }
         }
 
+        // TODO: This should actually traverse the tree. It was written this was to test the Pointer type.
         public override void ExitDeclarationSpecifiers(CParser.DeclarationSpecifiersContext context)
         {
-            _currSymbol.Type = new Variable(EnumUtil.PrimitiveKindMap[context.GetText()]);
+            var text = context.GetText();
+            var index = text.IndexOf("*", StringComparison.Ordinal);
+
+            if (index == -1)
+            {
+                _currSymbol.Type = new Variable(EnumUtil.PrimitiveKindMap[text]);
+                return;
+            }
+
+            var primitive = text.Substring(0, index);
+            var pointerCount = text.Length - index;
+            IType prev = new Variable(EnumUtil.PrimitiveKindMap[primitive]);
+
+            for (var i = 0; i < pointerCount; i++)
+            {
+                prev = new Pointer(prev);
+            }
+
+            _currSymbol.Type = prev;
         }
     }
 }
