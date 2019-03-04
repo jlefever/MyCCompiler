@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using MyCCompiler.Analysis;
 using System.IO;
+using MyCCompiler.AST;
 
 namespace MyCCompiler
 {
@@ -18,8 +19,8 @@ namespace MyCCompiler
                 parser = new CParser(tokenStream);
             }
 
-            parser.AddParseListener(new SymbolTableListener());
-            parser.compilationUnit();
+            var visitor = new CompilationUnitVisitor();
+            var compilationUnit = visitor.Visit(parser.compilationUnit());
         }
     }
 }
