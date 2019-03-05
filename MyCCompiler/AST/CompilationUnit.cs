@@ -25,4 +25,16 @@ namespace MyCCompiler.AST
             Text = text;
         }
     }
+
+    public class Declaration : IExternal
+    {
+        public string Specifier { get; }
+        public string Lexme { get; }
+
+        public Declaration(string specifier, string lexme)
+        {
+            Specifier = specifier;
+            Lexme = lexme;
+        }
+    }
 }

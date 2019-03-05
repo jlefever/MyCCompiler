@@ -39,9 +39,17 @@ namespace MyCCompiler.AST
     {
         public override IExternal VisitExternalDeclaration(CParser.ExternalDeclarationContext context)
         {
-            if (context.functionDefinition() == null) return null;
-            var functionDefinitionVisitor = new FunctionDefinitionVisitor();
-            return context.functionDefinition().Accept(functionDefinitionVisitor);
+            if (context.functionDefinition() != null)
+            {
+                return context.functionDefinition().Accept(new FunctionDefinitionVisitor());
+            }
+
+            if (context.declaration() != null)
+            {
+                return context.declaration().Accept(new DeclarationVisitor());
+            }
+
+            return null;
         }
     }
 
@@ -49,8 +57,18 @@ namespace MyCCompiler.AST
     {
         public override FunctionDefinition VisitFunctionDefinition(CParser.FunctionDefinitionContext context)
         {
-            var name = context.declarator().GetText();
-            return new FunctionDefinition(name);
+            return new FunctionDefinition(context.GetText());
+        }
+    }
+
+    public class DeclarationVisitor : CBaseVisitor<Declaration>
+    {
+        public override Declaration VisitDeclaration(CParser.DeclarationContext context)
+        {
+            var specifier = context.declarationSpecifiers().GetText();
+            var lexme = context.initDeclaratorList().GetText();
+
+            return new Declaration(specifier, lexme);
         }
     }
 }

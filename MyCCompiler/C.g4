@@ -178,8 +178,6 @@ constantExpression
 
 declaration
     :   declarationSpecifiers initDeclaratorList ';'
-	| 	declarationSpecifiers ';'
-    |   staticAssertDeclaration
     ;
 
 declarationSpecifiers
@@ -258,7 +256,6 @@ structDeclarationList
 
 structDeclaration
     :   specifierQualifierList structDeclaratorList? ';'
-    |   staticAssertDeclaration
     ;
 
 specifierQualifierList
@@ -446,10 +443,6 @@ designatorList
 designator
     :   '[' constantExpression ']'
     |   '.' Identifier
-    ;
-
-staticAssertDeclaration
-    :   '_Static_assert' '(' constantExpression ',' StringLiteral+ ')' ';'
     ;
 
 statement
