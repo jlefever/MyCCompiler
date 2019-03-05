@@ -2,6 +2,8 @@
 
 namespace MyCCompiler.AST
 {
+    // Consider one subclass of CBaseVisitor of type INode instead?
+    // VisitIfNotNull function
     public class CompilationUnitVisitor : CBaseVisitor<CompilationUnit>
     {
         private readonly IList<IExternal> _externals;
@@ -57,7 +59,9 @@ namespace MyCCompiler.AST
     {
         public override FunctionDefinition VisitFunctionDefinition(CParser.FunctionDefinitionContext context)
         {
-            return new FunctionDefinition(context.GetText());
+            var cs = context.compoundStatement().Accept(new CompoundStatementVisitor());
+
+            return new FunctionDefinition(context.GetText(), cs);
         }
     }
 
@@ -69,6 +73,19 @@ namespace MyCCompiler.AST
             var lexme = context.initDeclaratorList().GetText();
 
             return new Declaration(specifier, lexme);
+        }
+    }
+
+    public class CompoundStatementVisitor : CBaseVisitor<CompoundStatement>
+    {
+        public override CompoundStatement VisitCompoundStatement(CParser.CompoundStatementContext context)
+        {
+            return context.blockItemList()?.Accept(this);
+        }
+
+        public override CompoundStatement VisitBlockItemList(CParser.BlockItemListContext context)
+        {
+            return base.VisitBlockItemList(context);
         }
     }
 }
