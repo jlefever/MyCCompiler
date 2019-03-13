@@ -72,4 +72,46 @@ namespace MyCCompiler.AST
             Declarator = declarator;
         }
     }
+
+    public interface IPointer : INode
+    {
+        bool IsAtomic { get; }
+        bool IsConst { get; }
+        bool IsRestricted { get; }
+        bool IsVolitile { get; }
+    }
+
+    public class PointerToPointer : IPointer
+    {
+        public IPointer Pointer { get; }
+        public bool IsAtomic { get; }
+        public bool IsConst { get; }
+        public bool IsRestricted { get; }
+        public bool IsVolitile { get; }
+
+        public PointerToPointer(IPointer pointer, bool isAtomic, bool isConst, bool isRestricted, bool isVolitile)
+        {
+            Pointer = pointer;
+            IsAtomic = isAtomic;
+            IsConst = isConst;
+            IsRestricted = isRestricted;
+            IsVolitile = isVolitile;
+        }
+    }
+
+    public class TerminalPointer : IPointer
+    {
+        public bool IsAtomic { get; }
+        public bool IsConst { get; }
+        public bool IsRestricted { get; }
+        public bool IsVolitile { get; }
+
+        public TerminalPointer(bool isAtomic, bool isConst, bool isRestricted, bool isVolitile)
+        {
+            IsAtomic = isAtomic;
+            IsConst = isConst;
+            IsRestricted = isRestricted;
+            IsVolitile = isVolitile;
+        }
+    }
 }

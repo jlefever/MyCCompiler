@@ -79,7 +79,29 @@ namespace MyCCompiler.AST
 
         public static Declarator Build(CParser.DeclaratorContext context)
         {
-            return new Declarator(context.GetText());
+            if (context.pointer() != null)
+            {
+                // I don't know when this happens
+                // but it should call the build pointer method
+                throw new NotImplementedException();
+            }
+
+            return new Declarator(context.directDeclarator().Identifier().GetText());
+        }
+
+        public static INode Build(CParser.PointerContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.TypeQualifierListContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.TypeQualifierContext context)
+        {
+            throw new NotImplementedException();
         }
 
         public static CompoundStatement Build(CParser.CompoundStatementContext context)
