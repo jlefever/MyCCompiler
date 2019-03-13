@@ -125,6 +125,11 @@ namespace MyCCompiler.AST
     {
         public override Declarator VisitDeclarator(CParser.DeclaratorContext context)
         {
+            if (context.gccDeclaratorExtension() != null)
+            {
+                throw new NotSupportedException();
+            }
+
             return new Declarator(context.GetText());
         }
     }
