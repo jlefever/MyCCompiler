@@ -19,8 +19,7 @@ namespace MyCCompiler
                 parser = new CParser(tokenStream);
             }
 
-            var visitor = new CompilationUnitVisitor();
-            var compilationUnit = visitor.Visit(parser.compilationUnit());
+            var compilationUnit = parser.compilationUnit().Accept(new CompilationUnitVisitor());
         }
     }
 }

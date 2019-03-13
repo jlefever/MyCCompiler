@@ -8,34 +8,27 @@ namespace MyCCompiler.AST
     // A Visitor is named {ParseTreeName}Visitor with return type {AstTreeName}
     public class CompilationUnitVisitor : CBaseVisitor<CompilationUnit>
     {
-        private readonly IList<IExternal> _externals;
-
-        public CompilationUnitVisitor()
-        {
-            _externals = new List<IExternal>();
-        }
-
         public override CompilationUnit VisitCompilationUnit(CParser.CompilationUnitContext context)
         {
-            Visit(context.translationUnit());
-            return new CompilationUnit(_externals);
+            var externals = context.translationUnit().Accept(new TranslationUnitVisitor());
+            return new CompilationUnit(externals);
         }
+    }
 
-        public override CompilationUnit VisitTranslationUnit(CParser.TranslationUnitContext context)
+    public class TranslationUnitVisitor : CBaseVisitor<IList<IExternal>>
+    {
+        // Which branch should be traversed first?
+        public override IList<IExternal> VisitTranslationUnit(CParser.TranslationUnitContext context)
         {
             if (context.translationUnit() != null)
             {
-                Visit(context.translationUnit());
+                var list = context.translationUnit().Accept(new TranslationUnitVisitor());
+                list.Add(context.externalDeclaration().Accept(new ExternalDeclarationVisitor()));
+                return list;
             }
 
             var external = context.externalDeclaration().Accept(new ExternalDeclarationVisitor());
-
-            if (external != null)
-            {
-                _externals.Add(external);
-            }
-
-            return null;
+            return new List<IExternal> { external };
         }
     }
 
@@ -63,7 +56,6 @@ namespace MyCCompiler.AST
         public override FunctionDefinition VisitFunctionDefinition(CParser.FunctionDefinitionContext context)
         {
             var cs = context.compoundStatement().Accept(new CompoundStatementVisitor());
-
             return new FunctionDefinition(context.GetText(), cs);
         }
     }
@@ -77,19 +69,8 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class DeclarationSpecifiersVisitor : CBaseVisitor<INode>
-    {
-        public override INode VisitDeclarationSpecifier(CParser.DeclarationSpecifierContext context)
-        {
-            return base.VisitDeclarationSpecifier(context);
-        }
-    }
-
     public class InitDeclaratorListVisitor : CBaseVisitor<IList<IDeclarator>>
     {
-        // This is one way of traversing "List"s described in the grammar
-        // For an alternative way see blockItemList
-        // All of these kinds of nodes should probably use the same method of traversal
         public override IList<IDeclarator> VisitInitDeclaratorList(CParser.InitDeclaratorListContext context)
         {
             var declarator = context.initDeclarator().Accept(new InitDeclaratorVisitor());
@@ -125,10 +106,10 @@ namespace MyCCompiler.AST
     {
         public override Declarator VisitDeclarator(CParser.DeclaratorContext context)
         {
-            if (context.gccDeclaratorExtension() != null)
-            {
-                throw new NotSupportedException();
-            }
+            //if (context.gccDeclaratorExtension() != null)
+            //{
+            //    throw new NotSupportedException();
+            //}
 
             return new Declarator(context.GetText());
         }
@@ -136,32 +117,33 @@ namespace MyCCompiler.AST
 
     public class CompoundStatementVisitor : CBaseVisitor<CompoundStatement>
     {
-        private readonly IList<IStatement> _statements;
-
-        public CompoundStatementVisitor()
-        {
-            _statements = new List<IStatement>();
-        }
-
         public override CompoundStatement VisitCompoundStatement(CParser.CompoundStatementContext context)
         {
-            if (context.blockItemList() != null)
+            if (context.blockItemList() == null)
             {
-                Visit(context.blockItemList());
+                // Empty brackets
+                return new CompoundStatement(new List<IStatement>());
             }
 
-            return new CompoundStatement(_statements);
+            var statements = context.blockItemList().Accept(new BlockItemListVisitor());
+            return new CompoundStatement(statements);
         }
+    }
 
-        public override CompoundStatement VisitBlockItemList(CParser.BlockItemListContext context)
+    public class BlockItemListVisitor : CBaseVisitor<IList<IStatement>>
+    {
+        public override IList<IStatement> VisitBlockItemList(CParser.BlockItemListContext context)
         {
-            if (context.blockItemList() != null)
+            var statement = context.blockItem().Accept(new BlockItemVisitor());
+
+            if (context.blockItemList() == null)
             {
-                Visit(context.blockItemList());
+                return new List<IStatement> { statement };
             }
 
-            _statements.Add(context.blockItem().Accept(new BlockItemVisitor()));
-            return null;
+            var list = context.blockItemList().Accept(new BlockItemListVisitor());
+            list.Add(statement);
+            return list;
         }
     }
 
