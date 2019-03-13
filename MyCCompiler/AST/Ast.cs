@@ -12,9 +12,9 @@ namespace MyCCompiler.AST
 
     public class CompilationUnit : INode
     {
-        public IList<IExternal> Externals { get; }
+        public LinkedList<IExternal> Externals { get; }
 
-        public CompilationUnit(IList<IExternal> externals)
+        public CompilationUnit(LinkedList<IExternal> externals)
         {
             Externals = externals;
         }
@@ -34,9 +34,9 @@ namespace MyCCompiler.AST
 
     public class Declaration : IExternal, IStatement
     {
-        public IList<IDeclarator> Declarators { get; }
+        public LinkedList<IDeclarator> Declarators { get; }
 
-        public Declaration(IList<IDeclarator> declarators)
+        public Declaration(LinkedList<IDeclarator> declarators)
         {
             Declarators = declarators;
         }
@@ -44,9 +44,9 @@ namespace MyCCompiler.AST
 
     public class CompoundStatement : IStatement
     {
-        public IList<IStatement> Statements;
+        public LinkedList<IStatement> Statements;
 
-        public CompoundStatement(IList<IStatement> statements)
+        public CompoundStatement(LinkedList<IStatement> statements)
         {
             Statements = statements;
         }

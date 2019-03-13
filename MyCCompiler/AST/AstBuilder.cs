@@ -10,18 +10,17 @@ namespace MyCCompiler.AST
             return new CompilationUnit(Build(context.translationUnit()));
         }
 
-        // Which branch should be traversed first?
-        public static IList<IExternal> Build(CParser.TranslationUnitContext context)
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<IExternal> Build(CParser.TranslationUnitContext context)
         {
-            if (context.translationUnit() != null)
+            if (context.translationUnit() == null)
             {
-                var list = Build(context.translationUnit());
-                list.Add(Build(context.externalDeclaration()));
-                return list;
+                return CreateLinkedList(Build(context.externalDeclaration()));
             }
 
-            var external = Build(context.externalDeclaration());
-            return new List<IExternal> { external };
+            var list = Build(context.translationUnit());
+            list.AddLast(Build(context.externalDeclaration()));
+            return list;
         }
 
         public static IExternal Build(CParser.ExternalDeclarationContext context)
@@ -52,17 +51,16 @@ namespace MyCCompiler.AST
             return new Declaration(declarators);
         }
 
-        public static IList<IDeclarator> Build(CParser.InitDeclaratorListContext context)
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<IDeclarator> Build(CParser.InitDeclaratorListContext context)
         {
-            var declarator = Build(context.initDeclarator());
-
             if (context.initDeclaratorList() == null)
             {
-                return new List<IDeclarator> { declarator };
+                return CreateLinkedList(Build(context.initDeclarator()));
             }
 
             var list = Build(context.initDeclaratorList());
-            list.Add(declarator);
+            list.AddLast(Build(context.initDeclarator()));
             return list;
         }
 
@@ -89,24 +87,24 @@ namespace MyCCompiler.AST
             if (context.blockItemList() == null)
             {
                 // Empty brackets
-                return new CompoundStatement(new List<IStatement>());
+                return new CompoundStatement(new LinkedList<IStatement>());
             }
 
             var statements = Build(context.blockItemList());
             return new CompoundStatement(statements);
         }
 
-        public static IList<IStatement> Build(CParser.BlockItemListContext context)
-        {
-            var statement = Build(context.blockItem());
 
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<IStatement> Build(CParser.BlockItemListContext context)
+        {
             if (context.blockItemList() == null)
             {
-                return new List<IStatement> { statement };
+                return CreateLinkedList(Build(context.blockItem()));
             }
 
             var list = Build(context.blockItemList());
-            list.Add(statement);
+            list.AddLast(Build(context.blockItem()));
             return list;
         }
 
@@ -129,6 +127,13 @@ namespace MyCCompiler.AST
 
             // Other statements not supported yet
             throw new NotImplementedException();
+        }
+
+        private static LinkedList<T> CreateLinkedList<T>(T element)
+        {
+            var list = new LinkedList<T>();
+            list.AddLast(element);
+            return list;
         }
     }
 }
