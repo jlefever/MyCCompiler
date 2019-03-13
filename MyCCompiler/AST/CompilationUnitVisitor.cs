@@ -53,6 +53,7 @@ namespace MyCCompiler.AST
                 return context.declaration().Accept(new DeclarationVisitor());
             }
 
+            // stray ";"
             return null;
         }
     }
@@ -71,10 +72,60 @@ namespace MyCCompiler.AST
     {
         public override Declaration VisitDeclaration(CParser.DeclarationContext context)
         {
-            var specifier = context.declarationSpecifiers().GetText();
-            var lexme = context.initDeclaratorList().GetText();
+            var declarators = context.initDeclaratorList().Accept(new InitDeclaratorListVisitor());
+            return new Declaration(declarators);
+        }
+    }
 
-            return new Declaration(specifier, lexme);
+    public class DeclarationSpecifiersVisitor : CBaseVisitor<INode>
+    {
+        public override INode VisitDeclarationSpecifier(CParser.DeclarationSpecifierContext context)
+        {
+            return base.VisitDeclarationSpecifier(context);
+        }
+    }
+
+    public class InitDeclaratorListVisitor : CBaseVisitor<IList<IDeclarator>>
+    {
+        // This is one way of traversing "List"s described in the grammar
+        // For an alternative way see blockItemList
+        // All of these kinds of nodes should probably use the same method of traversal
+        public override IList<IDeclarator> VisitInitDeclaratorList(CParser.InitDeclaratorListContext context)
+        {
+            var declarator = context.initDeclarator().Accept(new InitDeclaratorVisitor());
+
+            if (context.initDeclaratorList() == null)
+            {
+                return new List<IDeclarator> { declarator };
+            }
+
+            var list = context.initDeclaratorList().Accept(new InitDeclaratorListVisitor());
+            list.Add(declarator);
+            return list;
+        }
+    }
+
+    public class InitDeclaratorVisitor : CBaseVisitor<IDeclarator>
+    {
+        public override IDeclarator VisitInitDeclarator(CParser.InitDeclaratorContext context)
+        {
+            var declarator = context.declarator().Accept(new DeclaratorVisitor());
+
+            if (context.initializer() != null)
+            {
+                // TODO: Visit the initializer
+                return new InitDeclarator(declarator);
+            }
+
+            return declarator;
+        }
+    }
+
+    public class DeclaratorVisitor : CBaseVisitor<Declarator>
+    {
+        public override Declarator VisitDeclarator(CParser.DeclaratorContext context)
+        {
+            return new Declarator(context.GetText());
         }
     }
 

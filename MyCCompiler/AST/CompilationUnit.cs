@@ -8,6 +8,8 @@ namespace MyCCompiler.AST
 
     public interface IStatement : INode { }
 
+    public interface IDeclarator : INode { }
+
     public class CompilationUnit : INode
     {
         public IList<IExternal> Externals { get; }
@@ -32,19 +34,12 @@ namespace MyCCompiler.AST
 
     public class Declaration : IExternal, IStatement
     {
-        public string Specifier { get; }
-        public string Lexme { get; }
+        public IList<IDeclarator> Declarators { get; }
 
-        public Declaration(string specifier, string lexme)
+        public Declaration(IList<IDeclarator> declarators)
         {
-            Specifier = specifier;
-            Lexme = lexme;
+            Declarators = declarators;
         }
-    }
-
-    public class Statement : IStatement
-    {
-
     }
 
     public class CompoundStatement : IStatement
@@ -54,6 +49,27 @@ namespace MyCCompiler.AST
         public CompoundStatement(IList<IStatement> statements)
         {
             Statements = statements;
+        }
+    }
+
+    public class Declarator : IDeclarator
+    {
+        public string Text { get; }
+
+        public Declarator(string text)
+        {
+            Text = text;
+        }
+    }
+
+    public class InitDeclarator : IDeclarator
+    {
+        public Declarator Declarator { get; }
+        // TODO: Initializer
+
+        public InitDeclarator(Declarator declarator)
+        {
+            Declarator = declarator;
         }
     }
 }
