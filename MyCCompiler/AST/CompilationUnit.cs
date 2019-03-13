@@ -47,8 +47,13 @@ namespace MyCCompiler.AST
 
     }
 
-    public class CompoundStatement : INode
+    public class CompoundStatement : IStatement
     {
         public IList<IStatement> Statements;
+
+        public CompoundStatement(IList<IStatement> statements)
+        {
+            Statements = statements;
+        }
     }
 }

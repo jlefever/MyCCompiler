@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MyCCompiler.AST
 {
     // Consider one subclass of CBaseVisitor of type INode instead?
     // VisitIfNotNull function
+    // A Visitor is named {ParseTreeName}Visitor with return type {AstTreeName}
     public class CompilationUnitVisitor : CBaseVisitor<CompilationUnit>
     {
         private readonly IList<IExternal> _externals;
@@ -78,14 +80,59 @@ namespace MyCCompiler.AST
 
     public class CompoundStatementVisitor : CBaseVisitor<CompoundStatement>
     {
+        private readonly IList<IStatement> _statements;
+
+        public CompoundStatementVisitor()
+        {
+            _statements = new List<IStatement>();
+        }
+
         public override CompoundStatement VisitCompoundStatement(CParser.CompoundStatementContext context)
         {
-            return context.blockItemList()?.Accept(this);
+            if (context.blockItemList() != null)
+            {
+                Visit(context.blockItemList());
+            }
+
+            return new CompoundStatement(_statements);
         }
 
         public override CompoundStatement VisitBlockItemList(CParser.BlockItemListContext context)
         {
-            return base.VisitBlockItemList(context);
+            if (context.blockItemList() != null)
+            {
+                Visit(context.blockItemList());
+            }
+
+            _statements.Add(context.blockItem().Accept(new BlockItemVisitor()));
+            return null;
+        }
+    }
+
+    public class BlockItemVisitor : CBaseVisitor<IStatement>
+    {
+        public override IStatement VisitBlockItem(CParser.BlockItemContext context)
+        {
+            if (context.statement() != null)
+            {
+                return context.statement().Accept(new StatementVisitor());
+            }
+
+            return context.declaration().Accept(new DeclarationVisitor());
+        }
+    }
+
+    public class StatementVisitor : CBaseVisitor<IStatement>
+    {
+        public override IStatement VisitStatement(CParser.StatementContext context)
+        {
+            if (context.compoundStatement() != null)
+            {
+                return context.compoundStatement().Accept(new CompoundStatementVisitor());
+            }
+
+            // Other statements not supported yet
+            throw new NotImplementedException();
         }
     }
 }
