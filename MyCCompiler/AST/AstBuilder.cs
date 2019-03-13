@@ -71,7 +71,7 @@ namespace MyCCompiler.AST
             if (context.initializer() != null)
             {
                 // TODO: Build the initializer
-                return new InitDeclarator(declarator);
+                return new InitializationDeclarator(declarator);
             }
 
             return declarator;
@@ -86,7 +86,18 @@ namespace MyCCompiler.AST
                 throw new NotImplementedException();
             }
 
-            return new Declarator(context.directDeclarator().Identifier().GetText());
+            return new Declarator(Build(context.directDeclarator()));
+        }
+
+        public static Identifier Build(CParser.DirectDeclaratorContext context)
+        {
+            if (context.Identifier() == null)
+            {
+                // Ignore for now
+                return null;
+            }
+
+            return new Identifier(context.Identifier().Symbol.Text);
         }
 
         public static INode Build(CParser.PointerContext context)

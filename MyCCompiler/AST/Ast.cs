@@ -54,22 +54,32 @@ namespace MyCCompiler.AST
 
     public class Declarator : IDeclarator
     {
-        public string Text { get; }
+        public Identifier Identifier { get; }
 
-        public Declarator(string text)
+        public Declarator(Identifier identifier)
         {
-            Text = text;
+            Identifier = identifier;
         }
     }
 
-    public class InitDeclarator : IDeclarator
+    public class InitializationDeclarator : IDeclarator
     {
         public Declarator Declarator { get; }
         // TODO: Initializer
 
-        public InitDeclarator(Declarator declarator)
+        public InitializationDeclarator(Declarator declarator)
         {
             Declarator = declarator;
+        }
+    }
+
+    public class Identifier
+    {
+        public string Lexme { get; }
+
+        public Identifier(string lexme)
+        {
+            Lexme = lexme;
         }
     }
 
