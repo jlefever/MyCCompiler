@@ -19,7 +19,8 @@ namespace MyCCompiler
                 parser = new CParser(tokenStream);
             }
 
-            var compilationUnit = parser.compilationUnit().Accept(new CompilationUnitVisitor());
+            var astBuilder = new AstBuilder();
+            var ast = astBuilder.Build(parser.compilationUnit());
         }
     }
 }
