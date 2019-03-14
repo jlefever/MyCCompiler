@@ -364,8 +364,6 @@ nestedParenthesesBlock
 pointer
     :   '*' typeQualifierList?
     |   '*' typeQualifierList? pointer
-    |   '^' typeQualifierList? // Blocks language extension
-    |   '^' typeQualifierList? pointer // Blocks language extension
     ;
 
 typeQualifierList

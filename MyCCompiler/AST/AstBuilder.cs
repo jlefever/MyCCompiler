@@ -100,19 +100,36 @@ namespace MyCCompiler.AST
             return new Identifier(context.Identifier().Symbol.Text);
         }
 
-        public static INode Build(CParser.PointerContext context)
+        public static IPointer Build(CParser.PointerContext context)
         {
-            throw new NotImplementedException();
+            if (context.pointer() != null)
+            {
+                // I don't know when this happens
+                // but it should return the PointerToPointer type OR
+                // return a LinkedList of "terminal" pointers
+                throw new NotImplementedException();
+            }
+
+            var qualifiers = Build(context.typeQualifierList());
+            return new TerminalPointer(new HashSet<Qualifier>(qualifiers));
         }
 
-        public static INode Build(CParser.TypeQualifierListContext context)
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<Qualifier> Build(CParser.TypeQualifierListContext context)
         {
-            throw new NotImplementedException();
+            if (context.typeQualifierList() == null)
+            {
+                return CreateLinkedList(Build(context.typeQualifier()));
+            }
+
+            var list = Build(context.typeQualifierList());
+            list.AddLast(Build(context.typeQualifier()));
+            return list;
         }
 
-        public static INode Build(CParser.TypeQualifierContext context)
+        public static Qualifier Build(CParser.TypeQualifierContext context)
         {
-            throw new NotImplementedException();
+            return QualifierMap[context.GetText()];
         }
 
         public static CompoundStatement Build(CParser.CompoundStatementContext context)
@@ -168,5 +185,13 @@ namespace MyCCompiler.AST
             list.AddLast(element);
             return list;
         }
+
+        private static readonly IDictionary<string, Qualifier> QualifierMap = new Dictionary<string, Qualifier>
+        {
+            { "const", Qualifier.Const },
+            { "volatile", Qualifier.Volatile },
+            { "restrict", Qualifier.Restrict },
+            { "_Atomic", Qualifier.Atomic }
+        };
     }
 }

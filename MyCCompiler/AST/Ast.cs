@@ -85,43 +85,36 @@ namespace MyCCompiler.AST
 
     public interface IPointer : INode
     {
-        bool IsAtomic { get; }
-        bool IsConst { get; }
-        bool IsRestricted { get; }
-        bool IsVolitile { get; }
+        ISet<Qualifier> Qualifiers { get; }
     }
 
     public class PointerToPointer : IPointer
     {
+        public ISet<Qualifier> Qualifiers { get; }
         public IPointer Pointer { get; }
-        public bool IsAtomic { get; }
-        public bool IsConst { get; }
-        public bool IsRestricted { get; }
-        public bool IsVolitile { get; }
 
-        public PointerToPointer(IPointer pointer, bool isAtomic, bool isConst, bool isRestricted, bool isVolitile)
+        public PointerToPointer(ISet<Qualifier> qualifiers, IPointer pointer)
         {
+            Qualifiers = qualifiers;
             Pointer = pointer;
-            IsAtomic = isAtomic;
-            IsConst = isConst;
-            IsRestricted = isRestricted;
-            IsVolitile = isVolitile;
         }
     }
 
     public class TerminalPointer : IPointer
     {
-        public bool IsAtomic { get; }
-        public bool IsConst { get; }
-        public bool IsRestricted { get; }
-        public bool IsVolitile { get; }
+        public ISet<Qualifier> Qualifiers { get; }
 
-        public TerminalPointer(bool isAtomic, bool isConst, bool isRestricted, bool isVolitile)
+        public TerminalPointer(ISet<Qualifier> qualifiers)
         {
-            IsAtomic = isAtomic;
-            IsConst = isConst;
-            IsRestricted = isRestricted;
-            IsVolitile = isVolitile;
+            Qualifiers = qualifiers;
         }
+    }
+
+    public enum Qualifier
+    {
+        Const,
+        Volatile,
+        Restrict,
+        Atomic
     }
 }
