@@ -34,10 +34,12 @@ namespace MyCCompiler.AST
 
     public class Declaration : IExternal, IStatement
     {
+        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
         public LinkedList<IDeclarator> Declarators { get; }
 
-        public Declaration(LinkedList<IDeclarator> declarators)
+        public Declaration(LinkedList<IDeclarationSpecifier> declarationSpecifiers, LinkedList<IDeclarator> declarators)
         {
+            DeclarationSpecifiers = declarationSpecifiers;
             Declarators = declarators;
         }
     }
@@ -110,11 +112,216 @@ namespace MyCCompiler.AST
         }
     }
 
-    public enum Qualifier
+    public interface IDeclarationSpecifier : INode { }
+
+    public class Qualifier : IDeclarationSpecifier
+    {
+        public bool Equals(Qualifier other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return QualifierKind == other.QualifierKind;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != typeof(Qualifier))
+            {
+                return false;
+            }
+
+            return Equals((Qualifier)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)QualifierKind;
+        }
+
+        public static bool operator ==(Qualifier left, Qualifier right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Qualifier left, Qualifier right)
+        {
+            return !Equals(left, right);
+        }
+
+        public QualifierKind QualifierKind { get; }
+
+        public Qualifier(QualifierKind qualifierKind)
+        {
+            QualifierKind = qualifierKind;
+        }
+    }
+
+    public class Storage : IDeclarationSpecifier
+    {
+        public bool Equals(Storage other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return StorageKind == other.StorageKind;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != typeof(Storage))
+            {
+                return false;
+            }
+
+            return Equals((Storage)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)StorageKind;
+        }
+
+        public static bool operator ==(Storage left, Storage right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Storage left, Storage right)
+        {
+            return !Equals(left, right);
+        }
+
+        public StorageKind StorageKind { get; }
+
+        public Storage(StorageKind storageKind)
+        {
+            StorageKind = storageKind;
+        }
+    }
+
+    public class TypeSpecifier : IDeclarationSpecifier
+    {
+        public bool Equals(TypeSpecifier other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return TypeSpecifierKind == other.TypeSpecifierKind;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != typeof(TypeSpecifier))
+            {
+                return false;
+            }
+
+            return Equals((TypeSpecifier)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)TypeSpecifierKind;
+        }
+
+        public static bool operator ==(TypeSpecifier left, TypeSpecifier right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(TypeSpecifier left, TypeSpecifier right)
+        {
+            return !Equals(left, right);
+        }
+
+        public TypeSpecifierKind TypeSpecifierKind { get; }
+
+        public TypeSpecifier(TypeSpecifierKind typeSpecifierKind)
+        {
+            TypeSpecifierKind = typeSpecifierKind;
+        }
+    }
+
+    public enum QualifierKind
     {
         Const,
         Volatile,
         Restrict,
         Atomic
+    }
+
+    public enum StorageKind
+    {
+        Auto,
+        Register,
+        Static,
+        Extern
+    }
+
+    public enum TypeSpecifierKind
+    {
+        Void,
+        Char,
+        Short,
+        Int,
+        Long,
+        Float,
+        Double,
+        Signed,
+        Unsigned,
+        Bool,
+        Complex
     }
 }

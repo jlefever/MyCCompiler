@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MyCCompiler.AST
 {
@@ -47,8 +48,75 @@ namespace MyCCompiler.AST
 
         public static Declaration Build(CParser.DeclarationContext context)
         {
+            var declarationSpecifiers = Build(context.declarationSpecifiers());
             var declarators = Build(context.initDeclaratorList());
-            return new Declaration(declarators);
+            return new Declaration(declarationSpecifiers, declarators);
+        }
+
+        public static LinkedList<IDeclarationSpecifier> Build(CParser.DeclarationSpecifiersContext context)
+        {
+            return new LinkedList<IDeclarationSpecifier>(context.declarationSpecifier().Select(Build));
+        }
+
+        public static IDeclarationSpecifier Build(CParser.DeclarationSpecifierContext context)
+        {
+            if (context.functionSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.alignmentSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.storageClassSpecifier() != null)
+            {
+                return Build(context.storageClassSpecifier());
+            }
+
+            if (context.typeSpecifier() != null)
+            {
+                return Build(context.typeSpecifier());
+            }
+
+            return Build(context.typeQualifier());
+        }
+
+        public static Storage Build(CParser.StorageClassSpecifierContext context)
+        {
+            // TODO: Handle typedef
+            return new Storage(StorageKindMap[context.GetText()]);
+        }
+
+        public static TypeSpecifier Build(CParser.TypeSpecifierContext context)
+        {
+            if (context.atomicTypeSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.structOrUnionSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.enumSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.typedefName() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (context.typeSpecifier() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            return new TypeSpecifier(TypeSpecifierKindMap[context.GetText()]);
         }
 
         // This is a list grammar. Consider using generics.
@@ -129,7 +197,7 @@ namespace MyCCompiler.AST
 
         public static Qualifier Build(CParser.TypeQualifierContext context)
         {
-            return QualifierMap[context.GetText()];
+            return new Qualifier(QualifierKindMap[context.GetText()]);
         }
 
         public static CompoundStatement Build(CParser.CompoundStatementContext context)
@@ -186,12 +254,35 @@ namespace MyCCompiler.AST
             return list;
         }
 
-        private static readonly IDictionary<string, Qualifier> QualifierMap = new Dictionary<string, Qualifier>
+        private static readonly IDictionary<string, QualifierKind> QualifierKindMap = new Dictionary<string, QualifierKind>
         {
-            { "const", Qualifier.Const },
-            { "volatile", Qualifier.Volatile },
-            { "restrict", Qualifier.Restrict },
-            { "_Atomic", Qualifier.Atomic }
+            { "const", QualifierKind.Const },
+            { "volatile", QualifierKind.Volatile },
+            { "restrict", QualifierKind.Restrict },
+            { "_Atomic", QualifierKind.Atomic }
+        };
+
+        private static readonly IDictionary<string, StorageKind> StorageKindMap = new Dictionary<string, StorageKind>
+        {
+            { "auto", StorageKind.Auto },
+            { "register", StorageKind.Register },
+            { "static", StorageKind.Static },
+            { "extern", StorageKind.Extern }
+        };
+
+        private static readonly IDictionary<string, TypeSpecifierKind> TypeSpecifierKindMap = new Dictionary<string, TypeSpecifierKind>
+        {
+            { "void", TypeSpecifierKind.Void },
+            { "char", TypeSpecifierKind.Char },
+            { "short", TypeSpecifierKind.Short },
+            { "int", TypeSpecifierKind.Int },
+            { "long", TypeSpecifierKind.Long },
+            { "float", TypeSpecifierKind.Float },
+            { "double", TypeSpecifierKind.Double },
+            { "signed", TypeSpecifierKind.Signed },
+            { "unsigned", TypeSpecifierKind.Unsigned },
+            { "_Bool", TypeSpecifierKind.Bool },
+            { "_Complex", TypeSpecifierKind.Complex },
         };
     }
 }
