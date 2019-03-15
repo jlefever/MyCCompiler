@@ -22,12 +22,14 @@ namespace MyCCompiler.AST
 
     public class FunctionDefinition : IExternal
     {
-        public string Text { get; }
+        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
+        public Declarator Declarator { get; }
         public CompoundStatement CompoundStatement { get; }
 
-        public FunctionDefinition(string text, CompoundStatement compoundStatement)
+        public FunctionDefinition(LinkedList<IDeclarationSpecifier> declarationSpecifiers, Declarator declarator, CompoundStatement compoundStatement)
         {
-            Text = text;
+            DeclarationSpecifiers = declarationSpecifiers;
+            Declarator = declarator;
             CompoundStatement = compoundStatement;
         }
     }

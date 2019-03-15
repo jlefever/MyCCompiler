@@ -42,8 +42,16 @@ namespace MyCCompiler.AST
 
         public static FunctionDefinition Build(CParser.FunctionDefinitionContext context)
         {
-            var cs = Build(context.compoundStatement());
-            return new FunctionDefinition(context.GetText(), cs);
+            var declarationSpecifiers = new LinkedList<IDeclarationSpecifier>();
+
+            if (context.declarationSpecifiers() != null)
+            {
+                declarationSpecifiers = Build(context.declarationSpecifiers());
+            }
+
+            var declarator = Build(context.declarator());
+            var compoundStatement = Build(context.compoundStatement());
+            return new FunctionDefinition(declarationSpecifiers, declarator, compoundStatement);
         }
 
         public static Declaration Build(CParser.DeclarationContext context)
