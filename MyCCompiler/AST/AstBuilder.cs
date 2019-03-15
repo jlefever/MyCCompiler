@@ -89,7 +89,7 @@ namespace MyCCompiler.AST
             return new Storage(StorageKindMap[context.GetText()]);
         }
 
-        public static TypeSpecifier Build(CParser.TypeSpecifierContext context)
+        public static ITypeSpecifier Build(CParser.TypeSpecifierContext context)
         {
             if (context.atomicTypeSpecifier() != null)
             {
@@ -113,10 +113,12 @@ namespace MyCCompiler.AST
 
             if (context.typeSpecifier() != null)
             {
-                throw new NotImplementedException();
+                var typeSpecifier = Build(context.typeSpecifier());
+                var pointer = Build(context.pointer());
+                return new TypeSpecifierWithPointer(typeSpecifier, pointer);
             }
 
-            return new TypeSpecifier(TypeSpecifierKindMap[context.GetText()]);
+            return new TypeKeyword(TypeKeywordKindMap[context.GetText()]);
         }
 
         // This is a list grammar. Consider using generics.
@@ -170,16 +172,22 @@ namespace MyCCompiler.AST
 
         public static IPointer Build(CParser.PointerContext context)
         {
+            var qualifiers = Enumerable.Empty<Qualifier>();
+
+            if (context.typeQualifierList() != null)
+            {
+                qualifiers = Build(context.typeQualifierList());
+            }
+
             if (context.pointer() != null)
             {
                 // I don't know when this happens
-                // but it should return the PointerToPointer type OR
+                // but it should return the PointerWithPointer type OR
                 // return a LinkedList of "terminal" pointers
                 throw new NotImplementedException();
             }
 
-            var qualifiers = Build(context.typeQualifierList());
-            return new TerminalPointer(new HashSet<Qualifier>(qualifiers));
+            return new Pointer(new HashSet<Qualifier>(qualifiers));
         }
 
         // This is a list grammar. Consider using generics.
@@ -270,19 +278,19 @@ namespace MyCCompiler.AST
             { "extern", StorageKind.Extern }
         };
 
-        private static readonly IDictionary<string, TypeSpecifierKind> TypeSpecifierKindMap = new Dictionary<string, TypeSpecifierKind>
+        private static readonly IDictionary<string, TypeKeywordKind> TypeKeywordKindMap = new Dictionary<string, TypeKeywordKind>
         {
-            { "void", TypeSpecifierKind.Void },
-            { "char", TypeSpecifierKind.Char },
-            { "short", TypeSpecifierKind.Short },
-            { "int", TypeSpecifierKind.Int },
-            { "long", TypeSpecifierKind.Long },
-            { "float", TypeSpecifierKind.Float },
-            { "double", TypeSpecifierKind.Double },
-            { "signed", TypeSpecifierKind.Signed },
-            { "unsigned", TypeSpecifierKind.Unsigned },
-            { "_Bool", TypeSpecifierKind.Bool },
-            { "_Complex", TypeSpecifierKind.Complex },
+            { "void", TypeKeywordKind.Void },
+            { "char", TypeKeywordKind.Char },
+            { "short", TypeKeywordKind.Short },
+            { "int", TypeKeywordKind.Int },
+            { "long", TypeKeywordKind.Long },
+            { "float", TypeKeywordKind.Float },
+            { "double", TypeKeywordKind.Double },
+            { "signed", TypeKeywordKind.Signed },
+            { "unsigned", TypeKeywordKind.Unsigned },
+            { "_Bool", TypeKeywordKind.Bool },
+            { "_Complex", TypeKeywordKind.Complex },
         };
     }
 }

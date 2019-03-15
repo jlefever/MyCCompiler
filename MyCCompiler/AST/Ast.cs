@@ -90,29 +90,43 @@ namespace MyCCompiler.AST
         ISet<Qualifier> Qualifiers { get; }
     }
 
-    public class PointerToPointer : IPointer
+    public class PointerWithPointer : IPointer
     {
         public ISet<Qualifier> Qualifiers { get; }
         public IPointer Pointer { get; }
 
-        public PointerToPointer(ISet<Qualifier> qualifiers, IPointer pointer)
+        public PointerWithPointer(ISet<Qualifier> qualifiers, IPointer pointer)
         {
             Qualifiers = qualifiers;
             Pointer = pointer;
         }
     }
 
-    public class TerminalPointer : IPointer
+    public class Pointer : IPointer
     {
         public ISet<Qualifier> Qualifiers { get; }
 
-        public TerminalPointer(ISet<Qualifier> qualifiers)
+        public Pointer(ISet<Qualifier> qualifiers)
         {
             Qualifiers = qualifiers;
         }
     }
 
     public interface IDeclarationSpecifier : INode { }
+
+    public interface ITypeSpecifier : IDeclarationSpecifier { }
+
+    public class TypeSpecifierWithPointer : ITypeSpecifier
+    {
+        public ITypeSpecifier TypeSpecifier { get; }
+        public IPointer Pointer { get; }
+
+        public TypeSpecifierWithPointer(ITypeSpecifier typeSpecifier, IPointer pointer)
+        {
+            TypeSpecifier = typeSpecifier;
+            Pointer = pointer;
+        }
+    }
 
     public class Qualifier : IDeclarationSpecifier
     {
@@ -234,9 +248,9 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class TypeSpecifier : IDeclarationSpecifier
+    public class TypeKeyword : ITypeSpecifier
     {
-        public bool Equals(TypeSpecifier other)
+        public bool Equals(TypeKeyword other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -248,7 +262,7 @@ namespace MyCCompiler.AST
                 return true;
             }
 
-            return TypeSpecifierKind == other.TypeSpecifierKind;
+            return TypeKeywordKind == other.TypeKeywordKind;
         }
 
         public override bool Equals(object obj)
@@ -263,34 +277,34 @@ namespace MyCCompiler.AST
                 return true;
             }
 
-            if (obj.GetType() != typeof(TypeSpecifier))
+            if (obj.GetType() != typeof(TypeKeyword))
             {
                 return false;
             }
 
-            return Equals((TypeSpecifier)obj);
+            return Equals((TypeKeyword)obj);
         }
 
         public override int GetHashCode()
         {
-            return (int)TypeSpecifierKind;
+            return (int)TypeKeywordKind;
         }
 
-        public static bool operator ==(TypeSpecifier left, TypeSpecifier right)
+        public static bool operator ==(TypeKeyword left, TypeKeyword right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(TypeSpecifier left, TypeSpecifier right)
+        public static bool operator !=(TypeKeyword left, TypeKeyword right)
         {
             return !Equals(left, right);
         }
 
-        public TypeSpecifierKind TypeSpecifierKind { get; }
+        public TypeKeywordKind TypeKeywordKind { get; }
 
-        public TypeSpecifier(TypeSpecifierKind typeSpecifierKind)
+        public TypeKeyword(TypeKeywordKind typeKeywordKind)
         {
-            TypeSpecifierKind = typeSpecifierKind;
+            TypeKeywordKind = typeKeywordKind;
         }
     }
 
@@ -310,7 +324,7 @@ namespace MyCCompiler.AST
         Extern
     }
 
-    public enum TypeSpecifierKind
+    public enum TypeKeywordKind
     {
         Void,
         Char,
