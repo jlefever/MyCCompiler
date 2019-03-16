@@ -167,15 +167,27 @@ namespace MyCCompiler.AST
             return new Declarator(Build(context.directDeclarator()));
         }
 
-        public static Identifier Build(CParser.DirectDeclaratorContext context)
+        public static IDirectDeclarator Build(CParser.DirectDeclaratorContext context)
         {
-            if (context.Identifier() == null)
+            if (context.Identifier() != null)
             {
-                // Ignore for now
-                return null;
+                return new Identifier(context.Identifier().Symbol.Text);
             }
 
-            return new Identifier(context.Identifier().Symbol.Text);
+            if (context.declarator() != null)
+            {
+                return new ParensDeclarator(Build(context.declarator()));
+            }
+
+            var directDeclarator = Build(context.directDeclarator());
+
+            // function pointer
+            if (context.pointer() != null)
+            {
+                throw new NotImplementedException();
+            }
+
+            return new FunctionDeclarator(directDeclarator);
         }
 
         public static IPointer Build(CParser.PointerContext context)

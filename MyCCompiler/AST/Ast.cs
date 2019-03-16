@@ -58,11 +58,11 @@ namespace MyCCompiler.AST
 
     public class Declarator : IDeclarator
     {
-        public Identifier Identifier { get; }
+        public IDirectDeclarator DirectDeclarator { get; }
 
-        public Declarator(Identifier identifier)
+        public Declarator(IDirectDeclarator directDeclarator)
         {
-            Identifier = identifier;
+            DirectDeclarator = directDeclarator;
         }
     }
 
@@ -77,13 +77,35 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class Identifier
+    public interface IDirectDeclarator { }
+
+    public class Identifier : IDirectDeclarator
     {
         public string Lexme { get; }
 
         public Identifier(string lexme)
         {
             Lexme = lexme;
+        }
+    }
+
+    public class ParensDeclarator : IDirectDeclarator
+    {
+        public Declarator Declarator { get; }
+
+        public ParensDeclarator(Declarator declarator)
+        {
+            Declarator = declarator;
+        }
+    }
+
+    public class FunctionDeclarator : IDirectDeclarator
+    {
+        private IDirectDeclarator DirectDeclarator { get; }
+
+        public FunctionDeclarator(IDirectDeclarator directDeclarator)
+        {
+            DirectDeclarator = directDeclarator;
         }
     }
 
