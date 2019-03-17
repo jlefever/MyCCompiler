@@ -91,11 +91,19 @@ namespace MyCCompiler.AST
 
     public class FunctionDeclarator : IDirectDeclarator
     {
-        private IDirectDeclarator DirectDeclarator { get; }
+        public IDirectDeclarator DirectDeclarator { get; }
+        public ParameterList ParameterList { get; }
 
         public FunctionDeclarator(IDirectDeclarator directDeclarator)
         {
             DirectDeclarator = directDeclarator;
+            ParameterList = new ParameterList(new LinkedList<Parameter>(), false);
+        }
+
+        public FunctionDeclarator(IDirectDeclarator directDeclarator, ParameterList parameterList)
+        {
+            DirectDeclarator = directDeclarator;
+            ParameterList = parameterList;
         }
     }
 
@@ -139,6 +147,30 @@ namespace MyCCompiler.AST
         {
             TypeSpecifier = typeSpecifier;
             Pointer = pointer;
+        }
+    }
+
+    public class ParameterList
+    {
+        public LinkedList<Parameter> Parameters { get; }
+        public bool Variadic { get; }
+
+        public ParameterList(LinkedList<Parameter> parameters, bool variadic)
+        {
+            Parameters = parameters;
+            Variadic = variadic;
+        }
+    }
+
+    public class Parameter : INode
+    {
+        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
+        public Declarator Declarator { get; }
+
+        public Parameter(LinkedList<IDeclarationSpecifier> declarationSpecifiers, Declarator declarator)
+        {
+            DeclarationSpecifiers = declarationSpecifiers;
+            Declarator = declarator;
         }
     }
 

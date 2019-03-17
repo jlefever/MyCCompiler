@@ -66,6 +66,11 @@ namespace MyCCompiler.AST
             return new LinkedList<IDeclarationSpecifier>(context.declarationSpecifier().Select(Build));
         }
 
+        public static LinkedList<IDeclarationSpecifier> Build(CParser.DeclarationSpecifiers2Context context)
+        {
+            return new LinkedList<IDeclarationSpecifier>(context.declarationSpecifier().Select(Build));
+        }
+
         public static IDeclarationSpecifier Build(CParser.DeclarationSpecifierContext context)
         {
             if (context.functionSpecifier() != null)
@@ -196,7 +201,54 @@ namespace MyCCompiler.AST
                 throw new NotImplementedException();
             }
 
+            // I'm not sure when this happens
+            if (context.identifierList() != null)
+            {
+                throw new NotSupportedException();
+            }
+
+            // function
+            if (context.parameterTypeList() != null)
+            {
+                var parameterList = Build(context.parameterTypeList());
+                return new FunctionDeclarator(directDeclarator, parameterList);
+            }
+
             return new FunctionDeclarator(directDeclarator);
+        }
+
+        public static ParameterList Build(CParser.ParameterTypeListContext context)
+        {
+            var parameters = Build(context.parameterList());
+            var variadic = context.ChildCount > 1;
+            return new ParameterList(parameters, variadic);
+        }
+
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<Parameter> Build(CParser.ParameterListContext context)
+        {
+            if (context.parameterList() == null)
+            {
+                return CreateLinkedList(Build(context.parameterDeclaration()));
+            }
+
+            var list = Build(context.parameterList());
+            list.AddLast(Build(context.parameterDeclaration()));
+            return list;
+        }
+
+        public static Parameter Build(CParser.ParameterDeclarationContext context)
+        {
+            if (context.declarationSpecifiers2() != null)
+            {
+                // Parameters with abstract declarators
+                // are not supported at this time.
+                throw new NotImplementedException();
+            }
+
+            var declarationSpecifiers = Build(context.declarationSpecifiers());
+            var declarator = Build(context.declarator());
+            return new Parameter(declarationSpecifiers, declarator);
         }
 
         public static IPointer Build(CParser.PointerContext context)
