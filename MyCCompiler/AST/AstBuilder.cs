@@ -130,7 +130,7 @@ namespace MyCCompiler.AST
         }
 
         // This is a list grammar. Consider using generics.
-        public static LinkedList<IDeclarator> Build(CParser.InitDeclaratorListContext context)
+        public static LinkedList<IInitDeclarator> Build(CParser.InitDeclaratorListContext context)
         {
             if (context.initDeclaratorList() == null)
             {
@@ -142,7 +142,7 @@ namespace MyCCompiler.AST
             return list;
         }
 
-        public static IDeclarator Build(CParser.InitDeclaratorContext context)
+        public static IInitDeclarator Build(CParser.InitDeclaratorContext context)
         {
             var declarator = Build(context.declarator());
 

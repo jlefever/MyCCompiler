@@ -8,7 +8,7 @@ namespace MyCCompiler.AST
 
     public interface IStatement : INode { }
 
-    public interface IDeclarator : INode { }
+    public interface IInitDeclarator : INode { }
 
     public class CompilationUnit : INode
     {
@@ -37,12 +37,12 @@ namespace MyCCompiler.AST
     public class Declaration : IExternal, IStatement
     {
         public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
-        public LinkedList<IDeclarator> Declarators { get; }
+        public LinkedList<IInitDeclarator> InitDeclarators { get; }
 
-        public Declaration(LinkedList<IDeclarationSpecifier> declarationSpecifiers, LinkedList<IDeclarator> declarators)
+        public Declaration(LinkedList<IDeclarationSpecifier> declarationSpecifiers, LinkedList<IInitDeclarator> initDeclarators)
         {
             DeclarationSpecifiers = declarationSpecifiers;
-            Declarators = declarators;
+            InitDeclarators = initDeclarators;
         }
     }
 
@@ -56,7 +56,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class Declarator : IDeclarator
+    public class Declarator : IInitDeclarator
     {
         public IDirectDeclarator DirectDeclarator { get; }
 
@@ -66,7 +66,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class InitializationDeclarator : IDeclarator
+    public class InitializationDeclarator : IInitDeclarator
     {
         public Declarator Declarator { get; }
         // TODO: Initializer
