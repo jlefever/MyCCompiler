@@ -89,16 +89,6 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class ParensDeclarator : IDirectDeclarator
-    {
-        public Declarator Declarator { get; }
-
-        public ParensDeclarator(Declarator declarator)
-        {
-            Declarator = declarator;
-        }
-    }
-
     public class FunctionDeclarator : IDirectDeclarator
     {
         private IDirectDeclarator DirectDeclarator { get; }

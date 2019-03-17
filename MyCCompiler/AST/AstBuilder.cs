@@ -159,8 +159,9 @@ namespace MyCCompiler.AST
         {
             if (context.pointer() != null)
             {
-                // I don't know when this happens
-                // but it should call the build pointer method
+                // To my knowledge, this only happens when the
+                // direct declarator uses parenthesis.
+                // I am not supporting parenthesis at this time.
                 throw new NotImplementedException();
             }
 
@@ -169,17 +170,25 @@ namespace MyCCompiler.AST
 
         public static IDirectDeclarator Build(CParser.DirectDeclaratorContext context)
         {
+            // identifier, most basic form of declarator
             if (context.Identifier() != null)
             {
                 return new Identifier(context.Identifier().Symbol.Text);
             }
 
+            // declarator with parenthesis
             if (context.declarator() != null)
             {
-                return new ParensDeclarator(Build(context.declarator()));
+                throw new NotSupportedException();
             }
 
             var directDeclarator = Build(context.directDeclarator());
+
+            // array
+            if (context.GetChild(1).GetText() == "[")
+            {
+                throw new NotImplementedException();
+            }
 
             // function pointer
             if (context.pointer() != null)
