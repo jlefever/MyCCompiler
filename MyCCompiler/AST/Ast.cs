@@ -10,6 +10,17 @@ namespace MyCCompiler.AST
 
     public interface IInitDeclarator : INode { }
 
+    public interface IDirectDeclarator : INode { }
+
+    public interface IDeclarationSpecifier : INode { }
+
+    public interface ITypeSpecifier : IDeclarationSpecifier { }
+
+    public interface IPointer : INode
+    {
+        ISet<Qualifier> Qualifiers { get; }
+    }
+
     public class CompilationUnit : INode
     {
         public LinkedList<IExternal> Externals { get; }
@@ -22,11 +33,11 @@ namespace MyCCompiler.AST
 
     public class FunctionDefinition : IExternal
     {
-        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
+        public DeclarationSpecifiers DeclarationSpecifiers { get; }
         public Declarator Declarator { get; }
         public CompoundStatement CompoundStatement { get; }
 
-        public FunctionDefinition(LinkedList<IDeclarationSpecifier> declarationSpecifiers, Declarator declarator, CompoundStatement compoundStatement)
+        public FunctionDefinition(DeclarationSpecifiers declarationSpecifiers, Declarator declarator, CompoundStatement compoundStatement)
         {
             DeclarationSpecifiers = declarationSpecifiers;
             Declarator = declarator;
@@ -36,10 +47,10 @@ namespace MyCCompiler.AST
 
     public class Declaration : IExternal, IStatement
     {
-        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
+        public DeclarationSpecifiers DeclarationSpecifiers { get; }
         public LinkedList<IInitDeclarator> InitDeclarators { get; }
 
-        public Declaration(LinkedList<IDeclarationSpecifier> declarationSpecifiers, LinkedList<IInitDeclarator> initDeclarators)
+        public Declaration(DeclarationSpecifiers declarationSpecifiers, LinkedList<IInitDeclarator> initDeclarators)
         {
             DeclarationSpecifiers = declarationSpecifiers;
             InitDeclarators = initDeclarators;
@@ -77,8 +88,6 @@ namespace MyCCompiler.AST
         }
     }
 
-    public interface IDirectDeclarator { }
-
     public class Identifier : IDirectDeclarator
     {
         public string Lexme { get; }
@@ -107,11 +116,6 @@ namespace MyCCompiler.AST
         }
     }
 
-    public interface IPointer : INode
-    {
-        ISet<Qualifier> Qualifiers { get; }
-    }
-
     public class PointerWithPointer : IPointer
     {
         public ISet<Qualifier> Qualifiers { get; }
@@ -134,9 +138,19 @@ namespace MyCCompiler.AST
         }
     }
 
-    public interface IDeclarationSpecifier : INode { }
+    public class DeclarationSpecifiers
+    {
+        public ISet<ITypeSpecifier> TypeSpecifiers { get; }
+        public ISet<Storage> Storages { get; }
+        public ISet<Qualifier> Qualifiers { get; }
 
-    public interface ITypeSpecifier : IDeclarationSpecifier { }
+        public DeclarationSpecifiers(ISet<ITypeSpecifier> typeSpecifiers, ISet<Storage> storages, ISet<Qualifier> qualifiers)
+        {
+            TypeSpecifiers = typeSpecifiers;
+            Storages = storages;
+            Qualifiers = qualifiers;
+        }
+    }
 
     public class TypeSpecifierWithPointer : ITypeSpecifier
     {
@@ -164,10 +178,10 @@ namespace MyCCompiler.AST
 
     public class Parameter : INode
     {
-        public LinkedList<IDeclarationSpecifier> DeclarationSpecifiers { get; }
+        public DeclarationSpecifiers DeclarationSpecifiers { get; }
         public Declarator Declarator { get; }
 
-        public Parameter(LinkedList<IDeclarationSpecifier> declarationSpecifiers, Declarator declarator)
+        public Parameter(DeclarationSpecifiers declarationSpecifiers, Declarator declarator)
         {
             DeclarationSpecifiers = declarationSpecifiers;
             Declarator = declarator;

@@ -42,13 +42,13 @@ namespace MyCCompiler.AST
 
         public static FunctionDefinition Build(CParser.FunctionDefinitionContext context)
         {
-            var declarationSpecifiers = new LinkedList<IDeclarationSpecifier>();
-
-            if (context.declarationSpecifiers() != null)
+            if (context.declarationSpecifiers() == null)
             {
-                declarationSpecifiers = Build(context.declarationSpecifiers());
+                // Not supporting function definitions without declaration specifiers
+                throw new NotSupportedException();
             }
 
+            var declarationSpecifiers = Build(context.declarationSpecifiers());
             var declarator = Build(context.declarator());
             var compoundStatement = Build(context.compoundStatement());
             return new FunctionDefinition(declarationSpecifiers, declarator, compoundStatement);
@@ -61,14 +61,29 @@ namespace MyCCompiler.AST
             return new Declaration(declarationSpecifiers, declarators);
         }
 
-        public static LinkedList<IDeclarationSpecifier> Build(CParser.DeclarationSpecifiersContext context)
+        public static DeclarationSpecifiers Build(CParser.DeclarationSpecifiersContext context)
         {
-            return new LinkedList<IDeclarationSpecifier>(context.declarationSpecifier().Select(Build));
-        }
+            var typeSpecifiers = new HashSet<ITypeSpecifier>();
+            var storages = new HashSet<Storage>();
+            var qualifiers = new HashSet<Qualifier>();
 
-        public static LinkedList<IDeclarationSpecifier> Build(CParser.DeclarationSpecifiers2Context context)
-        {
-            return new LinkedList<IDeclarationSpecifier>(context.declarationSpecifier().Select(Build));
+            foreach (var declarationSpecifier in context.declarationSpecifier().Select(Build))
+            {
+                switch (declarationSpecifier)
+                {
+                    case ITypeSpecifier typeSpecifier:
+                        typeSpecifiers.Add(typeSpecifier);
+                        continue;
+                    case Storage storage:
+                        storages.Add(storage);
+                        continue;
+                    case Qualifier qualifier:
+                        qualifiers.Add(qualifier);
+                        break;
+                }
+            }
+
+            return new DeclarationSpecifiers(typeSpecifiers, storages, qualifiers);
         }
 
         public static IDeclarationSpecifier Build(CParser.DeclarationSpecifierContext context)
