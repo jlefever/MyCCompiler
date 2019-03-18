@@ -537,5 +537,48 @@ namespace MyCCompiler.AST
             { "^=", AssignmentKind.XorEquals },
             { "|=", AssignmentKind.OrEquals }
         };
+
+        private static readonly IDictionary<string, EqualityKind> EqualityKindMap = new Dictionary<string, EqualityKind>
+        {
+            { "==", EqualityKind.EqualTo },
+            { "!=", EqualityKind.NotEqualTo }
+        };
+
+        private static readonly IDictionary<string, RelationalKind> RelationalKindMap = new Dictionary<string, RelationalKind>
+        {
+            { "<", RelationalKind.LessThan },
+            { ">", RelationalKind.GreaterThan },
+            { "<=", RelationalKind.LessThanOrEqualTo },
+            { ">=", RelationalKind.GreaterThanOrEqualTo }
+        };
+
+        private static readonly IDictionary<string, ShiftKind> ShiftKindMap = new Dictionary<string, ShiftKind>
+        {
+            { "<<", ShiftKind.LShift },
+            { ">>", ShiftKind.RShift }
+        };
+
+        private static readonly IDictionary<string, AdditiveKind> AdditiveKindMap = new Dictionary<string, AdditiveKind>
+        {
+            { "+", AdditiveKind.Addition },
+            { "-", AdditiveKind.Subtraction }
+        };
+
+        private static readonly IDictionary<string, MultiplicativeKind> MultiplicativeKindMap = new Dictionary<string, MultiplicativeKind>
+        {
+            { "*", MultiplicativeKind.Multiplication },
+            { "/", MultiplicativeKind.Division },
+            { "%", MultiplicativeKind.Modulus }
+        };
+
+        private static readonly IDictionary<string, UnaryKind> UnaryKindMap = new Dictionary<string, UnaryKind>
+        {
+            { "&", UnaryKind.AddressOf },
+            { "*", UnaryKind.Dereference },
+            { "+", UnaryKind.Plus },
+            { "-", UnaryKind.Minus },
+            { "~", UnaryKind.BitwiseNot },
+            { "!", UnaryKind.Not }
+        };
     }
 }

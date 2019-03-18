@@ -447,4 +447,47 @@ namespace MyCCompiler.AST
         XorEquals,
         OrEquals
     }
+
+    public enum EqualityKind
+    {
+        EqualTo,
+        NotEqualTo
+    }
+
+    public enum RelationalKind
+    {
+        LessThan,
+        GreaterThan,
+        LessThanOrEqualTo,
+        GreaterThanOrEqualTo
+    }
+
+    public enum ShiftKind
+    {
+        LShift,
+        RShift
+    }
+
+    public enum AdditiveKind
+    {
+        Addition,
+        Subtraction
+    }
+
+    public enum MultiplicativeKind
+    {
+        Multiplication,
+        Division,
+        Modulus
+    }
+
+    public enum UnaryKind
+    {
+        AddressOf,
+        Dereference,
+        Plus,
+        Minus,
+        BitwiseNot,
+        Not
+    }
 }
