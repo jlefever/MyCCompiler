@@ -36,13 +36,13 @@ namespace MyCCompiler.AST
     public class FunctionDefinition : IExternal
     {
         public DeclarationSpecifiers DeclarationSpecifiers { get; }
-        public Declarator Declarator { get; }
+        public FunctionDeclarator FunctionDeclarator { get; }
         public CompoundStatement CompoundStatement { get; }
 
-        public FunctionDefinition(DeclarationSpecifiers declarationSpecifiers, Declarator declarator, CompoundStatement compoundStatement)
+        public FunctionDefinition(DeclarationSpecifiers declarationSpecifiers, FunctionDeclarator functionDeclarator, CompoundStatement compoundStatement)
         {
             DeclarationSpecifiers = declarationSpecifiers;
-            Declarator = declarator;
+            FunctionDeclarator = functionDeclarator;
             CompoundStatement = compoundStatement;
         }
     }
@@ -102,18 +102,18 @@ namespace MyCCompiler.AST
 
     public class FunctionDeclarator : IDirectDeclarator
     {
-        public IDirectDeclarator DirectDeclarator { get; }
+        public Identifier Identifier { get; }
         public ParameterList ParameterList { get; }
 
-        public FunctionDeclarator(IDirectDeclarator directDeclarator)
+        public FunctionDeclarator(Identifier identifier)
         {
-            DirectDeclarator = directDeclarator;
+            Identifier = identifier;
             ParameterList = new ParameterList(new LinkedList<Parameter>(), false);
         }
 
-        public FunctionDeclarator(IDirectDeclarator directDeclarator, ParameterList parameterList)
+        public FunctionDeclarator(Identifier identifier, ParameterList parameterList)
         {
-            DirectDeclarator = directDeclarator;
+            Identifier = identifier;
             ParameterList = parameterList;
         }
     }

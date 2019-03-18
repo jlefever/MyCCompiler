@@ -49,7 +49,7 @@ namespace MyCCompiler.AST
             }
 
             var declarationSpecifiers = Build(context.declarationSpecifiers());
-            var declarator = Build(context.declarator());
+            var declarator = (FunctionDeclarator)Build(context.declarator()).DirectDeclarator;
             var compoundStatement = Build(context.compoundStatement());
             return new FunctionDefinition(declarationSpecifiers, declarator, compoundStatement);
         }
@@ -223,13 +223,14 @@ namespace MyCCompiler.AST
             }
 
             // function
+            var identifier = (Identifier)directDeclarator;
             if (context.parameterTypeList() != null)
             {
                 var parameterList = Build(context.parameterTypeList());
-                return new FunctionDeclarator(directDeclarator, parameterList);
+                return new FunctionDeclarator(identifier, parameterList);
             }
 
-            return new FunctionDeclarator(directDeclarator);
+            return new FunctionDeclarator(identifier);
         }
 
         public static ParameterList Build(CParser.ParameterTypeListContext context)
