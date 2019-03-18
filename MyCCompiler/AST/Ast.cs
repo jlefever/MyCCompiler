@@ -87,11 +87,11 @@ namespace MyCCompiler.AST
 
     public class Identifier : IDirectDeclarator, IPrimaryExpression
     {
-        public string Lexme { get; }
+        public string Text { get; }
 
-        public Identifier(string lexme)
+        public Identifier(string text)
         {
-            Lexme = lexme;
+            Text = text;
         }
     }
 
