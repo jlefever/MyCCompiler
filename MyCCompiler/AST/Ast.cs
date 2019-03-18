@@ -21,6 +21,8 @@ namespace MyCCompiler.AST
         ISet<Qualifier> Qualifiers { get; }
     }
 
+    public interface IPrimaryExpression { }
+
     public class CompilationUnit : INode
     {
         public LinkedList<IExternal> Externals { get; }
@@ -88,7 +90,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class Identifier : IDirectDeclarator
+    public class Identifier : IDirectDeclarator, IPrimaryExpression
     {
         public string Lexme { get; }
 
@@ -207,6 +209,16 @@ namespace MyCCompiler.AST
         {
             Identifier = identifier;
             AssignmentKind = assignmentKind;
+        }
+    }
+
+    public class Constant : IPrimaryExpression
+    {
+        public string Text { get; }
+
+        public Constant(string text)
+        {
+            Text = text;
         }
     }
 

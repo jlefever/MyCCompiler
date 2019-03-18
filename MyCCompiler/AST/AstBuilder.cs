@@ -377,12 +377,72 @@ namespace MyCCompiler.AST
 
         public static AssignmentExpression Build(CParser.AssignmentExpressionContext context)
         {
-            var identifier = Build(context.unaryExpression());
+            var identifier = (Identifier)Build(context.unaryExpression());
             var assignmentKind = Build(context.assignmentOperator());
             return new AssignmentExpression(identifier, assignmentKind);
         }
 
-        public static Identifier Build(CParser.UnaryExpressionContext context)
+        public static INode Build(CParser.ConditionalExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.LogicalOrExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.LogicalAndExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.InclusiveOrExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.ExclusiveOrExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.AndExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.EqualityExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.RelationalExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.ShiftExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.AdditiveExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.MultiplicativeExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static INode Build(CParser.CastExpressionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static IPrimaryExpression Build(CParser.UnaryExpressionContext context)
         {
             if (context.postfixExpression() != null)
             {
@@ -393,7 +453,7 @@ namespace MyCCompiler.AST
             throw new NotSupportedException();
         }
 
-        public static Identifier Build(CParser.PostfixExpressionContext context)
+        public static IPrimaryExpression Build(CParser.PostfixExpressionContext context)
         {
             if (context.primaryExpression() != null)
             {
@@ -404,11 +464,16 @@ namespace MyCCompiler.AST
             throw new NotSupportedException();
         }
 
-        public static Identifier Build(CParser.PrimaryExpressionContext context)
+        public static IPrimaryExpression Build(CParser.PrimaryExpressionContext context)
         {
             if (context.Identifier() != null)
             {
                 return new Identifier(context.Identifier().Symbol.Text);
+            }
+
+            if (context.Constant() != null)
+            {
+                return new Constant(context.Constant().Symbol.Text);
             }
 
             // no other primary expresions supported currently
