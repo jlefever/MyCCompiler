@@ -435,17 +435,17 @@ namespace MyCCompiler.AST
 
     public enum AssignmentKind
     {
-        Equals,
-        MulEquals,
-        DivEquals,
-        ModEquals,
-        AddEquals,
-        SubEquals,
-        LShiftEquals,
-        RShiftEquals,
-        AndEquals,
-        XorEquals,
-        OrEquals
+        Assign,
+        MulAssign,
+        DivAssign,
+        ModAssign,
+        AddAssign,
+        SubAssign,
+        LShiftAssign,
+        RShiftAssign,
+        AndAssign,
+        XorAssign,
+        OrAssign
     }
 
     public enum EqualityKind

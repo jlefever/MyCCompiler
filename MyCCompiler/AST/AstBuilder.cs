@@ -525,17 +525,17 @@ namespace MyCCompiler.AST
 
         private static readonly IDictionary<string, AssignmentKind> AssignmentKindMap = new Dictionary<string, AssignmentKind>
         {
-            { "=", AssignmentKind.Equals },
-            { "*=", AssignmentKind.MulEquals },
-            { "/=", AssignmentKind.DivEquals },
-            { "%=", AssignmentKind.ModEquals },
-            { "+=", AssignmentKind.AddEquals },
-            { "-=", AssignmentKind.SubEquals },
-            { "<<=", AssignmentKind.LShiftEquals },
-            { ">>=", AssignmentKind.RShiftEquals },
-            { "&=", AssignmentKind.AndEquals },
-            { "^=", AssignmentKind.XorEquals },
-            { "|=", AssignmentKind.OrEquals }
+            { "=", AssignmentKind.Assign },
+            { "*=", AssignmentKind.MulAssign },
+            { "/=", AssignmentKind.DivAssign },
+            { "%=", AssignmentKind.ModAssign },
+            { "+=", AssignmentKind.AddAssign },
+            { "-=", AssignmentKind.SubAssign },
+            { "<<=", AssignmentKind.LShiftAssign },
+            { ">>=", AssignmentKind.RShiftAssign },
+            { "&=", AssignmentKind.AndAssign },
+            { "^=", AssignmentKind.XorAssign },
+            { "|=", AssignmentKind.OrAssign }
         };
 
         private static readonly IDictionary<string, EqualityKind> EqualityKindMap = new Dictionary<string, EqualityKind>
