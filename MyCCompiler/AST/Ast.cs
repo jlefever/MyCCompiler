@@ -188,6 +188,28 @@ namespace MyCCompiler.AST
         }
     }
 
+    public class ExpressionStatement : IStatement
+    {
+        public LinkedList<AssignmentExpression> Expressions { get; }
+
+        public ExpressionStatement(LinkedList<AssignmentExpression> expressions)
+        {
+            Expressions = expressions;
+        }
+    }
+
+    public class AssignmentExpression
+    {
+        public Identifier Identifier { get; }
+        public AssignmentKind AssignmentKind { get; }
+
+        public AssignmentExpression(Identifier identifier, AssignmentKind assignmentKind)
+        {
+            Identifier = identifier;
+            AssignmentKind = assignmentKind;
+        }
+    }
+
     public class Qualifier : IDeclarationSpecifier
     {
         public bool Equals(Qualifier other)
@@ -397,5 +419,20 @@ namespace MyCCompiler.AST
         Unsigned,
         Bool,
         Complex
+    }
+
+    public enum AssignmentKind
+    {
+        Equals,
+        MulEquals,
+        DivEquals,
+        ModEquals,
+        AddEquals,
+        SubEquals,
+        LShiftEquals,
+        RShiftEquals,
+        AndEquals,
+        XorEquals,
+        OrEquals
     }
 }

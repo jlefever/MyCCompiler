@@ -347,8 +347,77 @@ namespace MyCCompiler.AST
                 return Build(context.compoundStatement());
             }
 
+            if (context.expressionStatement() != null)
+            {
+                return Build(context.expressionStatement());
+            }
+
             // Other statements not supported yet
             throw new NotImplementedException();
+        }
+
+        public static ExpressionStatement Build(CParser.ExpressionStatementContext context)
+        {
+            // TODO: Handle stray ;
+            return new ExpressionStatement(Build(context.expression()));
+        }
+
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<AssignmentExpression> Build(CParser.ExpressionContext context)
+        {
+            if (context.expression() == null)
+            {
+                return CreateLinkedList(Build(context.assignmentExpression()));
+            }
+
+            var list = Build(context.expression());
+            list.AddLast(Build(context.assignmentExpression()));
+            return list;
+        }
+
+        public static AssignmentExpression Build(CParser.AssignmentExpressionContext context)
+        {
+            var identifier = Build(context.unaryExpression());
+            var assignmentKind = Build(context.assignmentOperator());
+            return new AssignmentExpression(identifier, assignmentKind);
+        }
+
+        public static Identifier Build(CParser.UnaryExpressionContext context)
+        {
+            if (context.postfixExpression() != null)
+            {
+                return Build(context.postfixExpression());
+            }
+
+            // no other unary expresions supported currently
+            throw new NotSupportedException();
+        }
+
+        public static Identifier Build(CParser.PostfixExpressionContext context)
+        {
+            if (context.primaryExpression() != null)
+            {
+                return Build(context.primaryExpression());
+            }
+
+            // no other postfix expresions supported currently
+            throw new NotSupportedException();
+        }
+
+        public static Identifier Build(CParser.PrimaryExpressionContext context)
+        {
+            if (context.Identifier() != null)
+            {
+                return new Identifier(context.Identifier().Symbol.Text);
+            }
+
+            // no other primary expresions supported currently
+            throw new NotSupportedException();
+        }
+
+        public static AssignmentKind Build(CParser.AssignmentOperatorContext context)
+        {
+            return AssignmentKindMap[context.GetText()];
         }
 
         private static LinkedList<T> CreateLinkedList<T>(T element)
@@ -386,7 +455,22 @@ namespace MyCCompiler.AST
             { "signed", TypeKeywordKind.Signed },
             { "unsigned", TypeKeywordKind.Unsigned },
             { "_Bool", TypeKeywordKind.Bool },
-            { "_Complex", TypeKeywordKind.Complex },
+            { "_Complex", TypeKeywordKind.Complex }
+        };
+
+        private static readonly IDictionary<string, AssignmentKind> AssignmentKindMap = new Dictionary<string, AssignmentKind>
+        {
+            { "=", AssignmentKind.Equals },
+            { "*=", AssignmentKind.MulEquals },
+            { "/=", AssignmentKind.DivEquals },
+            { "%=", AssignmentKind.ModEquals },
+            { "+=", AssignmentKind.AddEquals },
+            { "-=", AssignmentKind.SubEquals },
+            { "<<=", AssignmentKind.LShiftEquals },
+            { ">>=", AssignmentKind.RShiftEquals },
+            { "&=", AssignmentKind.AndEquals },
+            { "^=", AssignmentKind.XorEquals },
+            { "|=", AssignmentKind.OrEquals }
         };
     }
 }
