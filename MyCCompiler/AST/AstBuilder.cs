@@ -182,7 +182,7 @@ namespace MyCCompiler.AST
                 // To my knowledge, this only happens when the
                 // direct declarator uses parenthesis.
                 // I am not supporting parenthesis at this time.
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
             return new Declarator(Build(context.directDeclarator()));
@@ -267,24 +267,22 @@ namespace MyCCompiler.AST
             return new Parameter(declarationSpecifiers, declarator);
         }
 
-        public static IPointer Build(CParser.PointerContext context)
+        public static Pointer Build(CParser.PointerContext context)
         {
-            var qualifiers = Enumerable.Empty<Qualifier>();
-
-            if (context.typeQualifierList() != null)
-            {
-                qualifiers = Build(context.typeQualifierList());
-            }
-
             if (context.pointer() != null)
             {
                 // I don't know when this happens
-                // but it should return the PointerWithPointer type OR
-                // return a LinkedList of "terminal" pointers
-                throw new NotImplementedException();
+                // but if it is to be supported a new pointer type is needed
+                throw new NotSupportedException();
             }
 
-            return new Pointer(new HashSet<Qualifier>(qualifiers));
+            if (context.typeQualifierList() != null)
+            {
+                var qualifiers = Build(context.typeQualifierList());
+                return new Pointer(new HashSet<Qualifier>(qualifiers));
+            }
+
+            return new Pointer();
         }
 
         // This is a list grammar. Consider using generics.

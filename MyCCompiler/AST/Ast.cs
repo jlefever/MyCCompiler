@@ -16,11 +16,6 @@ namespace MyCCompiler.AST
 
     public interface ITypeSpecifier : IDeclarationSpecifier { }
 
-    public interface IPointer : INode
-    {
-        ISet<Qualifier> Qualifiers { get; }
-    }
-
     public interface IPrimaryExpression { }
 
     public class CompilationUnit : INode
@@ -118,21 +113,14 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class PointerWithPointer : IPointer
+    public class Pointer : INode
     {
         public ISet<Qualifier> Qualifiers { get; }
-        public IPointer Pointer { get; }
 
-        public PointerWithPointer(ISet<Qualifier> qualifiers, IPointer pointer)
+        public Pointer()
         {
-            Qualifiers = qualifiers;
-            Pointer = pointer;
+            Qualifiers = new HashSet<Qualifier>();
         }
-    }
-
-    public class Pointer : IPointer
-    {
-        public ISet<Qualifier> Qualifiers { get; }
 
         public Pointer(ISet<Qualifier> qualifiers)
         {
@@ -157,9 +145,9 @@ namespace MyCCompiler.AST
     public class TypeSpecifierWithPointer : ITypeSpecifier
     {
         public ITypeSpecifier TypeSpecifier { get; }
-        public IPointer Pointer { get; }
+        public Pointer Pointer { get; }
 
-        public TypeSpecifierWithPointer(ITypeSpecifier typeSpecifier, IPointer pointer)
+        public TypeSpecifierWithPointer(ITypeSpecifier typeSpecifier, Pointer pointer)
         {
             TypeSpecifier = typeSpecifier;
             Pointer = pointer;
