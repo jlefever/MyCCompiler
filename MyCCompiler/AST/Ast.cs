@@ -16,7 +16,9 @@ namespace MyCCompiler.AST
 
     public interface ITypeSpecifier : IDeclarationSpecifier { }
 
-    public interface IPrimaryExpression { }
+    public interface IExpression : INode { }
+
+    public interface IPrimaryExpression : IExpression { }
 
     public class CompilationUnit : INode
     {
@@ -128,7 +130,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class DeclarationSpecifiers
+    public class DeclarationSpecifiers : INode
     {
         public ISet<ITypeSpecifier> TypeSpecifiers { get; }
         public ISet<Storage> Storages { get; }
@@ -154,7 +156,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class ParameterList
+    public class ParameterList : INode
     {
         public LinkedList<Parameter> Parameters { get; }
         public bool Variadic { get; }
@@ -180,23 +182,25 @@ namespace MyCCompiler.AST
 
     public class ExpressionStatement : IStatement
     {
-        public LinkedList<AssignmentExpression> Expressions { get; }
+        public LinkedList<IExpression> Expressions { get; }
 
-        public ExpressionStatement(LinkedList<AssignmentExpression> expressions)
+        public ExpressionStatement(LinkedList<IExpression> expressions)
         {
             Expressions = expressions;
         }
     }
 
-    public class AssignmentExpression
+    public class AssignmentExpression : IExpression
     {
         public Identifier Identifier { get; }
         public AssignmentKind AssignmentKind { get; }
+        public IExpression Expression { get; }
 
-        public AssignmentExpression(Identifier identifier, AssignmentKind assignmentKind)
+        public AssignmentExpression(Identifier identifier, AssignmentKind assignmentKind, IExpression expression)
         {
             Identifier = identifier;
             AssignmentKind = assignmentKind;
+            Expression = expression;
         }
     }
 
@@ -207,6 +211,32 @@ namespace MyCCompiler.AST
         public Constant(string text)
         {
             Text = text;
+        }
+    }
+
+    public class BinaryExpression : IExpression
+    {
+        public BinaryOpKind Operator { get; }
+        public IExpression Left { get; }
+        public IExpression Right { get; }
+
+        public BinaryExpression(BinaryOpKind @operator, IExpression left, IExpression right)
+        {
+            Operator = @operator;
+            Left = left;
+            Right = right;
+        }
+    }
+
+    public class UnaryExpression : IExpression
+    {
+        public UnaryOpKind Operator { get; }
+        public IExpression Expression { get; }
+
+        public UnaryExpression(UnaryOpKind @operator, IExpression expression)
+        {
+            Operator = @operator;
+            Expression = expression;
         }
     }
 
@@ -436,40 +466,29 @@ namespace MyCCompiler.AST
         OrAssign
     }
 
-    public enum EqualityKind
+    public enum BinaryOpKind
     {
+        Or,
+        And,
+        BitwiseOr,
+        BitwiseXor,
+        BitwiseAnd,
         EqualTo,
-        NotEqualTo
-    }
-
-    public enum RelationalKind
-    {
+        NotEqualTo,
         LessThan,
         GreaterThan,
         LessThanOrEqualTo,
-        GreaterThanOrEqualTo
-    }
-
-    public enum ShiftKind
-    {
+        GreaterThanOrEqualTo,
         LShift,
-        RShift
-    }
-
-    public enum AdditiveKind
-    {
+        RShift,
         Addition,
-        Subtraction
-    }
-
-    public enum MultiplicativeKind
-    {
+        Subtraction,
         Multiplication,
         Division,
         Modulus
     }
 
-    public enum UnaryKind
+    public enum UnaryOpKind
     {
         AddressOf,
         Dereference,

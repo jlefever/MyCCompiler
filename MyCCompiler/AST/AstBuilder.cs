@@ -362,7 +362,7 @@ namespace MyCCompiler.AST
         }
 
         // This is a list grammar. Consider using generics.
-        public static LinkedList<AssignmentExpression> Build(CParser.ExpressionContext context)
+        public static LinkedList<IExpression> Build(CParser.ExpressionContext context)
         {
             if (context.expression() == null)
             {
@@ -374,78 +374,178 @@ namespace MyCCompiler.AST
             return list;
         }
 
-        public static AssignmentExpression Build(CParser.AssignmentExpressionContext context)
+        public static IExpression Build(CParser.AssignmentExpressionContext context)
         {
+            if (context.conditionalExpression() != null)
+            {
+                return Build(context.conditionalExpression());
+            }
+
             var identifier = (Identifier)Build(context.unaryExpression());
             var assignmentKind = Build(context.assignmentOperator());
-            return new AssignmentExpression(identifier, assignmentKind);
+            var expression = Build(context.assignmentExpression());
+            return new AssignmentExpression(identifier, assignmentKind, expression);
         }
 
-        public static INode Build(CParser.ConditionalExpressionContext context)
+        public static IExpression Build(CParser.ConditionalExpressionContext context)
         {
-            throw new NotImplementedException();
+            // ternary operator
+            if (context.expression() != null)
+            {
+                throw new NotSupportedException();
+            }
+
+            return Build(context.logicalOrExpression());
         }
 
-        public static INode Build(CParser.LogicalOrExpressionContext context)
+        public static IExpression Build(CParser.LogicalOrExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.logicalOrExpression() == null)
+            {
+                return Build(context.logicalAndExpression());
+            }
+
+            var left = Build(context.logicalOrExpression());
+            var right = Build(context.logicalAndExpression());
+            return new BinaryExpression(BinaryOpKind.Or, left, right);
         }
 
-        public static INode Build(CParser.LogicalAndExpressionContext context)
+        public static IExpression Build(CParser.LogicalAndExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.logicalAndExpression() == null)
+            {
+                return Build(context.inclusiveOrExpression());
+            }
+
+            var left = Build(context.logicalAndExpression());
+            var right = Build(context.inclusiveOrExpression());
+            return new BinaryExpression(BinaryOpKind.And, left, right);
         }
 
-        public static INode Build(CParser.InclusiveOrExpressionContext context)
+        public static IExpression Build(CParser.InclusiveOrExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.inclusiveOrExpression() == null)
+            {
+                return Build(context.exclusiveOrExpression());
+            }
+
+            var left = Build(context.inclusiveOrExpression());
+            var right = Build(context.exclusiveOrExpression());
+            return new BinaryExpression(BinaryOpKind.BitwiseOr, left, right);
         }
 
-        public static INode Build(CParser.ExclusiveOrExpressionContext context)
+        public static IExpression Build(CParser.ExclusiveOrExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.exclusiveOrExpression() == null)
+            {
+                return Build(context.andExpression());
+            }
+
+            var left = Build(context.exclusiveOrExpression());
+            var right = Build(context.andExpression());
+            return new BinaryExpression(BinaryOpKind.BitwiseXor, left, right);
         }
 
-        public static INode Build(CParser.AndExpressionContext context)
+        public static IExpression Build(CParser.AndExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.andExpression() == null)
+            {
+                return Build(context.equalityExpression());
+            }
+
+            var left = Build(context.andExpression());
+            var right = Build(context.equalityExpression());
+            return new BinaryExpression(BinaryOpKind.BitwiseAnd, left, right);
         }
 
-        public static INode Build(CParser.EqualityExpressionContext context)
+        public static IExpression Build(CParser.EqualityExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.equalityExpression() == null)
+            {
+                return Build(context.relationalExpression());
+            }
+
+            var left = Build(context.equalityExpression());
+            var right = Build(context.relationalExpression());
+            var op = BinaryOpKindMap[context.GetChild(1).GetText()];
+            return new BinaryExpression(op, left, right);
         }
 
-        public static INode Build(CParser.RelationalExpressionContext context)
+        public static IExpression Build(CParser.RelationalExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.relationalExpression() == null)
+            {
+                return Build(context.shiftExpression());
+            }
+
+            var left = Build(context.relationalExpression());
+            var right = Build(context.shiftExpression());
+            var op = BinaryOpKindMap[context.GetChild(1).GetText()];
+            return new BinaryExpression(op, left, right);
         }
 
-        public static INode Build(CParser.ShiftExpressionContext context)
+        public static IExpression Build(CParser.ShiftExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.shiftExpression() == null)
+            {
+                return Build(context.additiveExpression());
+            }
+
+            var left = Build(context.shiftExpression());
+            var right = Build(context.additiveExpression());
+            var op = BinaryOpKindMap[context.GetChild(1).GetText()];
+            return new BinaryExpression(op, left, right);
         }
 
-        public static INode Build(CParser.AdditiveExpressionContext context)
+        public static IExpression Build(CParser.AdditiveExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.additiveExpression() == null)
+            {
+                return Build(context.multiplicativeExpression());
+            }
+
+            var left = Build(context.additiveExpression());
+            var right = Build(context.multiplicativeExpression());
+            var op = BinaryOpKindMap[context.GetChild(1).GetText()];
+            return new BinaryExpression(op, left, right);
         }
 
-        public static INode Build(CParser.MultiplicativeExpressionContext context)
+        public static IExpression Build(CParser.MultiplicativeExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.multiplicativeExpression() == null)
+            {
+                return Build(context.castExpression());
+            }
+
+            var left = Build(context.multiplicativeExpression());
+            var right = Build(context.castExpression());
+            var op = BinaryOpKindMap[context.GetChild(1).GetText()];
+            return new BinaryExpression(op, left, right);
         }
 
-        public static INode Build(CParser.CastExpressionContext context)
+        public static IExpression Build(CParser.CastExpressionContext context)
         {
-            throw new NotImplementedException();
+            if (context.unaryExpression() != null)
+            {
+                return Build(context.unaryExpression());
+            }
+
+            // no other cast expresions supported currently
+            throw new NotSupportedException();
         }
 
-        public static IPrimaryExpression Build(CParser.UnaryExpressionContext context)
+        public static IExpression Build(CParser.UnaryExpressionContext context)
         {
             if (context.postfixExpression() != null)
             {
                 return Build(context.postfixExpression());
+            }
+
+            if (context.unaryOperator() != null)
+            {
+                var op = Build(context.unaryOperator());
+                var expression = Build(context.castExpression());
+                return new UnaryExpression(op, expression);
             }
 
             // no other unary expresions supported currently
@@ -482,6 +582,11 @@ namespace MyCCompiler.AST
         public static AssignmentKind Build(CParser.AssignmentOperatorContext context)
         {
             return AssignmentKindMap[context.GetText()];
+        }
+
+        public static UnaryOpKind Build(CParser.UnaryOperatorContext context)
+        {
+            return UnaryOpKindMap[context.GetText()];
         }
 
         private static LinkedList<T> CreateLinkedList<T>(T element)
@@ -537,47 +642,31 @@ namespace MyCCompiler.AST
             { "|=", AssignmentKind.OrAssign }
         };
 
-        private static readonly IDictionary<string, EqualityKind> EqualityKindMap = new Dictionary<string, EqualityKind>
+        private static readonly IDictionary<string, BinaryOpKind> BinaryOpKindMap = new Dictionary<string, BinaryOpKind>
         {
-            { "==", EqualityKind.EqualTo },
-            { "!=", EqualityKind.NotEqualTo }
+            { "==", BinaryOpKind.EqualTo },
+            { "!=", BinaryOpKind.NotEqualTo },
+            { "<", BinaryOpKind.LessThan },
+            { ">", BinaryOpKind.GreaterThan },
+            { "<=", BinaryOpKind.LessThanOrEqualTo },
+            { ">=", BinaryOpKind.GreaterThanOrEqualTo },
+            { "<<", BinaryOpKind.LShift },
+            { ">>", BinaryOpKind.RShift },
+            { "+", BinaryOpKind.Addition },
+            { "-", BinaryOpKind.Subtraction },
+            { "*", BinaryOpKind.Multiplication },
+            { "/", BinaryOpKind.Division },
+            { "%", BinaryOpKind.Modulus }
         };
 
-        private static readonly IDictionary<string, RelationalKind> RelationalKindMap = new Dictionary<string, RelationalKind>
+        private static readonly IDictionary<string, UnaryOpKind> UnaryOpKindMap = new Dictionary<string, UnaryOpKind>
         {
-            { "<", RelationalKind.LessThan },
-            { ">", RelationalKind.GreaterThan },
-            { "<=", RelationalKind.LessThanOrEqualTo },
-            { ">=", RelationalKind.GreaterThanOrEqualTo }
-        };
-
-        private static readonly IDictionary<string, ShiftKind> ShiftKindMap = new Dictionary<string, ShiftKind>
-        {
-            { "<<", ShiftKind.LShift },
-            { ">>", ShiftKind.RShift }
-        };
-
-        private static readonly IDictionary<string, AdditiveKind> AdditiveKindMap = new Dictionary<string, AdditiveKind>
-        {
-            { "+", AdditiveKind.Addition },
-            { "-", AdditiveKind.Subtraction }
-        };
-
-        private static readonly IDictionary<string, MultiplicativeKind> MultiplicativeKindMap = new Dictionary<string, MultiplicativeKind>
-        {
-            { "*", MultiplicativeKind.Multiplication },
-            { "/", MultiplicativeKind.Division },
-            { "%", MultiplicativeKind.Modulus }
-        };
-
-        private static readonly IDictionary<string, UnaryKind> UnaryKindMap = new Dictionary<string, UnaryKind>
-        {
-            { "&", UnaryKind.AddressOf },
-            { "*", UnaryKind.Dereference },
-            { "+", UnaryKind.Plus },
-            { "-", UnaryKind.Minus },
-            { "~", UnaryKind.BitwiseNot },
-            { "!", UnaryKind.Not }
+            { "&", UnaryOpKind.AddressOf },
+            { "*", UnaryOpKind.Dereference },
+            { "+", UnaryOpKind.Plus },
+            { "-", UnaryOpKind.Minus },
+            { "~", UnaryOpKind.BitwiseNot },
+            { "!", UnaryOpKind.Not }
         };
     }
 }
