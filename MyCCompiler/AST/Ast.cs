@@ -79,11 +79,12 @@ namespace MyCCompiler.AST
     public class InitializationDeclarator : IInitDeclarator
     {
         public Declarator Declarator { get; }
-        // TODO: Initializer
+        public IExpression Expression { get; }
 
-        public InitializationDeclarator(Declarator declarator)
+        public InitializationDeclarator(Declarator declarator, IExpression expression)
         {
             Declarator = declarator;
+            Expression = expression;
         }
     }
 

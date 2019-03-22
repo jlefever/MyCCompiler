@@ -1,5 +1,4 @@
 ﻿using Antlr4.Runtime;
-using MyCCompiler.Analysis;
 using System.IO;
 using MyCCompiler.AST;
 

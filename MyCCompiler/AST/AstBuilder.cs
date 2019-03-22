@@ -168,11 +168,22 @@ namespace MyCCompiler.AST
 
             if (context.initializer() != null)
             {
-                // TODO: Build the initializer
-                return new InitializationDeclarator(declarator);
+                var initializer = Build(context.initializer());
+                return new InitializationDeclarator(declarator, initializer);
             }
 
             return declarator;
+        }
+
+        public static IExpression Build(CParser.InitializerContext context)
+        {
+            if (context.assignmentExpression() != null)
+            {
+                return Build(context.assignmentExpression());
+            }
+
+            // not supporting initializer lists at this moment
+            throw new NotSupportedException();
         }
 
         public static Declarator Build(CParser.DeclaratorContext context)
