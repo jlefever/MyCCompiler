@@ -20,6 +20,9 @@ namespace MyCCompiler
 
             var astBuilder = new AstBuilder();
             var ast = astBuilder.Build(parser.compilationUnit());
+
+            var symbolBuilder = new SymbolBuilder();
+            symbolBuilder.Visit(ast);
         }
     }
 }

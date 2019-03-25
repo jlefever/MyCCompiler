@@ -54,6 +54,8 @@
     <Compile Include="Analysis\SymbolTableListener.cs" />
     <Compile Include="AST\AstBuilder.cs" />
     <Compile Include="AST\Ast.cs" />
+    <Compile Include="AST\Symbol.cs" />
+    <Compile Include="AST\SymbolBuilder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Analysis\SymbolTable.cs" />
