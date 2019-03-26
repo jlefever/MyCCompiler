@@ -70,7 +70,7 @@ namespace MyCCompiler.AST
         public IPointable Visit(DeclarationSpecifiers node)
         {
             var keywords = new HashSet<TypeKeywordKind>();
-            var pointers = 0;
+            var pointers = new LinkedList<ISet<Qualifier>>();
 
             foreach (var typeSpecifier in node.TypeSpecifiers)
             {
@@ -83,7 +83,7 @@ namespace MyCCompiler.AST
                     var ts = typeSpecifier;
                     while (ts is TypeSpecifierWithPointer tswp)
                     {
-                        pointers = pointers + 1;
+                        pointers.AddLast(tswp.Pointer.Qualifiers);
                         ts = tswp.TypeSpecifier;
                     }
 
@@ -91,11 +91,12 @@ namespace MyCCompiler.AST
                 }
             }
 
-            IPointable pointable = new Primitive(PrimitiveKindMap[keywords]);
+            var primitiveKind = PrimitiveKindMap[keywords];
+            var pointable = new Primitive(primitiveKind, node.Qualifiers, node.Storages);
 
-            for (var i = 0; i < pointers; i++)
+            foreach (var set in pointers)
             {
-                pointable = new PointerTo(pointable);
+                pointable = new PointerTo(pointable, set);
             }
 
             return pointable;

@@ -1,4 +1,6 @@
-﻿namespace MyCCompiler.AST
+﻿using System.Collections.Generic;
+
+namespace MyCCompiler.AST
 {
     public interface IType { }
 
@@ -19,10 +21,14 @@
     public class Primitive : IPointable
     {
         public PrimitiveKind PrimitiveKind { get; }
+        public ISet<Qualifier> Qualifiers { get; }
+        public ISet<Storage> Storages { get; }
 
-        public Primitive(PrimitiveKind primitiveKind)
+        public Primitive(PrimitiveKind primitiveKind, ISet<Qualifier> qualifiers, ISet<Storage> storages)
         {
             PrimitiveKind = primitiveKind;
+            Qualifiers = qualifiers;
+            Storages = storages;
         }
     }
 
@@ -52,10 +58,12 @@
     public class PointerTo : IPointable
     {
         public IPointable Target { get; }
+        public ISet<Qualifier> Qualifiers { get; }
 
-        public PointerTo(IPointable target)
+        public PointerTo(IPointable target, ISet<Qualifier> qualifiers)
         {
             Target = target;
+            Qualifiers = qualifiers;
         }
     }
 
