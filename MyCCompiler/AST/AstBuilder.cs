@@ -63,7 +63,7 @@ namespace MyCCompiler.AST
 
         public static DeclarationSpecifiers Build(CParser.DeclarationSpecifiersContext context)
         {
-            var typeSpecifiers = new HashSet<ITypeSpecifier>();
+            var typeSpecifiers = new LinkedList<ITypeSpecifier>();
             var storages = new HashSet<Storage>();
             var qualifiers = new HashSet<Qualifier>();
 
@@ -72,7 +72,7 @@ namespace MyCCompiler.AST
                 switch (declarationSpecifier)
                 {
                     case ITypeSpecifier typeSpecifier:
-                        typeSpecifiers.Add(typeSpecifier);
+                        typeSpecifiers.AddLast(typeSpecifier);
                         continue;
                     case Storage storage:
                         storages.Add(storage);

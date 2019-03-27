@@ -133,11 +133,11 @@ namespace MyCCompiler.AST
 
     public class DeclarationSpecifiers : INode
     {
-        public ISet<ITypeSpecifier> TypeSpecifiers { get; }
+        public LinkedList<ITypeSpecifier> TypeSpecifiers { get; }
         public ISet<Storage> Storages { get; }
         public ISet<Qualifier> Qualifiers { get; }
 
-        public DeclarationSpecifiers(ISet<ITypeSpecifier> typeSpecifiers, ISet<Storage> storages, ISet<Qualifier> qualifiers)
+        public DeclarationSpecifiers(LinkedList<ITypeSpecifier> typeSpecifiers, ISet<Storage> storages, ISet<Qualifier> qualifiers)
         {
             TypeSpecifiers = typeSpecifiers;
             Storages = storages;
@@ -440,14 +440,14 @@ namespace MyCCompiler.AST
     public enum TypeKeywordKind
     {
         Void,
-        Char,
-        Short,
-        Int,
-        Long,
-        Float,
-        Double,
         Signed,
         Unsigned,
+        Short,
+        Long,
+        Char,
+        Int,
+        Float,
+        Double,
         Bool,
         Complex
     }

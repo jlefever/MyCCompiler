@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using static MyCCompiler.AST.TypeKeywordKind;
 
 namespace MyCCompiler.AST
@@ -69,14 +70,14 @@ namespace MyCCompiler.AST
 
         public IPointable Visit(DeclarationSpecifiers node)
         {
-            var keywords = new HashSet<TypeKeywordKind>();
+            var keywords = new LinkedList<TypeKeywordKind>();
             var pointers = new LinkedList<ISet<Qualifier>>();
 
             foreach (var typeSpecifier in node.TypeSpecifiers)
             {
                 if (typeSpecifier is TypeKeyword typeKeyword)
                 {
-                    keywords.Add(typeKeyword.TypeKeywordKind);
+                    keywords.AddLast(typeKeyword.TypeKeywordKind);
                 }
                 else
                 {
@@ -87,12 +88,12 @@ namespace MyCCompiler.AST
                         ts = tswp.TypeSpecifier;
                     }
 
-                    keywords.Add(((TypeKeyword)ts).TypeKeywordKind);
+                    keywords.AddLast(((TypeKeyword)ts).TypeKeywordKind);
                 }
             }
 
-            var primitiveKind = PrimitiveKindMap[keywords];
-            var pointable = new Primitive(primitiveKind, node.Qualifiers, node.Storages);
+            var primitiveKind = PrimitiveKindMap[keywords.OrderBy(x => x).ToArray()];
+            IPointable pointable = new Primitive(primitiveKind, node.Qualifiers, node.Storages);
 
             foreach (var set in pointers)
             {
@@ -102,42 +103,74 @@ namespace MyCCompiler.AST
             return pointable;
         }
 
-        static SymbolBuilder()
-        {
-            PrimitiveKindMap = new Dictionary<HashSet<TypeKeywordKind>, PrimitiveKind>
-                (HashSet<TypeKeywordKind>.CreateSetComparer())
+        private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap = 
+            new Dictionary<TypeKeywordKind[], PrimitiveKind>(new EqualityComparer())
             {
-                { TypeKeywordSet(TypeKeywordKind.Char), PrimitiveKind.Char },
-                { TypeKeywordSet(Signed, TypeKeywordKind.Char), PrimitiveKind.SignedChar },
-                { TypeKeywordSet(Unsigned, TypeKeywordKind.Char), PrimitiveKind.UnsignedChar },
-                { TypeKeywordSet(Short), PrimitiveKind.Short },
-                { TypeKeywordSet(Short, Int), PrimitiveKind.Short },
-                { TypeKeywordSet(Signed, Short), PrimitiveKind.Short },
-                { TypeKeywordSet(Signed, Short, Int), PrimitiveKind.Short },
-                { TypeKeywordSet(Unsigned, Short), PrimitiveKind.UnsignedShort },
-                { TypeKeywordSet(Unsigned, Short, Int), PrimitiveKind.UnsignedShort },
-                { TypeKeywordSet(Int), PrimitiveKind.Int },
-                { TypeKeywordSet(Signed), PrimitiveKind.Int },
-                { TypeKeywordSet(Signed, Int), PrimitiveKind.Int },
-                { TypeKeywordSet(Unsigned), PrimitiveKind.UnsignedInt },
-                { TypeKeywordSet(Unsigned, Int), PrimitiveKind.UnsignedInt },
-                { TypeKeywordSet(Long), PrimitiveKind.Long },
-                { TypeKeywordSet(Long, Int), PrimitiveKind.Long },
-                { TypeKeywordSet(Signed, Long), PrimitiveKind.Long },
-                { TypeKeywordSet(Signed, Long, Int), PrimitiveKind.Long },
-                { TypeKeywordSet(Unsigned, Long), PrimitiveKind.UnsignedLong },
-                { TypeKeywordSet(Unsigned, Long, Int), PrimitiveKind.UnsignedLong },
-                { TypeKeywordSet(Float), PrimitiveKind.Float },
-                { TypeKeywordSet(TypeKeywordKind.Double), PrimitiveKind.Double },
-                { TypeKeywordSet(Long, TypeKeywordKind.Double), PrimitiveKind.LongDouble }
+                { new [] { TypeKeywordKind.Char }, PrimitiveKind.Char },
+                { new [] { Signed, TypeKeywordKind.Char }, PrimitiveKind.SignedChar },
+                { new [] { Unsigned, TypeKeywordKind.Char}, PrimitiveKind.UnsignedChar },
+                { new [] { Short }, PrimitiveKind.Short },
+                { new [] { Short, Int }, PrimitiveKind.Short },
+                { new [] { Signed, Short }, PrimitiveKind.Short },
+                { new [] { Signed, Short, Int }, PrimitiveKind.Short },
+                { new [] { Unsigned, Short }, PrimitiveKind.UnsignedShort },
+                { new [] { Unsigned, Short, Int }, PrimitiveKind.UnsignedShort },
+                { new [] { Int }, PrimitiveKind.Int },
+                { new [] { Signed }, PrimitiveKind.Int },
+                { new [] { Signed, Int }, PrimitiveKind.Int },
+                { new [] { Unsigned }, PrimitiveKind.UnsignedInt },
+                { new [] { Unsigned, Int }, PrimitiveKind.UnsignedInt },
+                { new [] { Long }, PrimitiveKind.Long },
+                { new [] { Long, Int }, PrimitiveKind.Long },
+                { new [] { Signed, Long }, PrimitiveKind.Long },
+                { new [] { Signed, Long, Int }, PrimitiveKind.Long },
+                { new [] { Unsigned, Long }, PrimitiveKind.UnsignedLong },
+                { new [] { Unsigned, Long, Int }, PrimitiveKind.UnsignedLong },
+                { new [] { Long, Long }, PrimitiveKind.LongLong },
+                { new [] { Long, Long, Int }, PrimitiveKind.LongLong },
+                { new [] { Signed, Long, Long }, PrimitiveKind.LongLong },
+                { new [] { Signed, Long, Long, Int }, PrimitiveKind.LongLong },
+                { new [] { Unsigned, Long, Long }, PrimitiveKind.UnsignedLongLong },
+                { new [] { Unsigned, Long, Long, Int }, PrimitiveKind.UnsignedLongLong },
+                { new [] { Float }, PrimitiveKind.Float },
+                { new [] { TypeKeywordKind.Double }, PrimitiveKind.Double },
+                { new [] { Long, TypeKeywordKind.Double }, PrimitiveKind.LongDouble }
             };
-        }
 
-        private static HashSet<TypeKeywordKind> TypeKeywordSet(params TypeKeywordKind[] keywords)
+        private class EqualityComparer : IEqualityComparer<TypeKeywordKind[]>
         {
-            return new HashSet<TypeKeywordKind>(keywords);
-        }
+            public bool Equals(TypeKeywordKind[] a, TypeKeywordKind[] b)
+            {
+                if (a == b)
+                {
+                    return true;
+                }
 
-        private static readonly IDictionary<HashSet<TypeKeywordKind>, PrimitiveKind> PrimitiveKindMap;
+                if (a == null || b == null)
+                {
+                    return false;
+                }
+
+                if (a.Length != b.Length)
+                {
+                    return false;
+                }
+
+                for (var i = 0; i < a.Length; i++)
+                {
+                    if (a[i] != b[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public int GetHashCode(TypeKeywordKind[] a)
+            {
+                return a.Aggregate(0, (current, item) => current ^ item.GetHashCode());
+            }
+        }
     }
 }
