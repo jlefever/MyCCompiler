@@ -7,6 +7,13 @@ namespace MyCCompiler.AST
 {
     public class SymbolBuilder
     {
+        private SymbolTable _currSymbolTable;
+
+        public SymbolBuilder()
+        {
+            _currSymbolTable = new SymbolTable(null);
+        }
+
         public void Visit(CompilationUnit node)
         {
             foreach (var external in node.Externals)
@@ -35,17 +42,16 @@ namespace MyCCompiler.AST
             Visit(node.CompoundStatement);
         }
 
-        public void Visit(FunctionDeclarator functionDeclarator)
-        {
-
-        }
-
         public void Visit(CompoundStatement node)
         {
+            _currSymbolTable = new SymbolTable(_currSymbolTable);
+
             foreach (var statement in node.Statements)
             {
                 Visit(statement);
             }
+
+            _currSymbolTable = _currSymbolTable.Previous;
         }
 
         public void Visit(IStatement node)
@@ -59,16 +65,83 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case ExpressionStatement n:
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
             }
         }
 
         public void Visit(Declaration node)
         {
-            var pointable = Visit(node.DeclarationSpecifiers);
+            Visit(node.DeclarationSpecifiers);
+
+            foreach (var initDeclarator in node.InitDeclarators)
+            {
+                Visit(initDeclarator);
+            }
         }
 
-        public IPointable Visit(DeclarationSpecifiers node)
+        public void Visit(IInitDeclarator node)
+        {
+            switch (node)
+            {
+                case Declarator n:
+                    Visit(n);
+                    break;
+                case InitializationDeclarator n:
+                    Visit(n);
+                    break;
+            }
+        }
+
+        public void Visit(Declarator node)
+        {
+            Visit(node.DirectDeclarator);
+        }
+
+        public void Visit(InitializationDeclarator node)
+        {
+            Visit(node.Declarator);
+        }
+
+        public void Visit(IDirectDeclarator node)
+        {
+            switch (node)
+            {
+                case Identifier n:
+                    Visit(n);
+                    break;
+                case FunctionDeclarator n:
+                    Visit(n);
+                    break;
+            }
+        }
+
+        public void Visit(Identifier node)
+        {
+            node.Symbol = _currSymbolTable.Get(node.Text);
+        }
+
+        public void Visit(FunctionDeclarator node)
+        {
+            Visit(node.Identifier);
+            Visit(node.ParameterList);
+        }
+
+        public void Visit(ParameterList node)
+        {
+            foreach (var parameter in node.Parameters)
+            {
+                Visit(parameter);
+            }
+        }
+
+        public void Visit(Parameter node)
+        {
+            Visit(node.DeclarationSpecifiers);
+            Visit(node.Declarator);
+        }
+
+        public void Visit(DeclarationSpecifiers node)
         {
             var keywords = new LinkedList<TypeKeywordKind>();
             var pointers = new LinkedList<ISet<Qualifier>>();
@@ -99,8 +172,68 @@ namespace MyCCompiler.AST
             {
                 pointable = new PointerTo(pointable, set);
             }
+        }
 
-            return pointable;
+        public void Visit(ExpressionStatement node)
+        {
+            foreach (var expression in node.Expressions)
+            {
+                Visit(expression);
+            }
+        }
+
+        public void Visit(IExpression node)
+        {
+            switch (node)
+            {
+                case IPrimaryExpression n:
+                    Visit(n);
+                    break;
+                case AssignmentExpression n:
+                    Visit(n);
+                    break;
+                case BinaryExpression n:
+                    Visit(n);
+                    break;
+                case UnaryExpression n:
+                    Visit(n);
+                    break;
+            }
+        }
+
+        public void Visit(AssignmentExpression node)
+        {
+            Visit(node.Identifier);
+            Visit(node.Expression);
+        }
+
+        public void Visit(BinaryExpression node)
+        {
+            Visit(node.Left);
+            Visit(node.Right);
+        }
+
+        public void Visit(UnaryExpression node)
+        {
+            Visit(node.Expression);
+        }
+
+        public void Visit(IPrimaryExpression node)
+        {
+            switch (node)
+            {
+                case Constant n:
+                    Visit(n);
+                    break;
+                case Identifier n:
+                    Visit(n);
+                    break;
+            }
+        }
+
+        public void Visit(Constant node)
+        {
+
         }
 
         private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap = 

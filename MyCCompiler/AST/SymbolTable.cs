@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MyCCompiler.Analysis
+namespace MyCCompiler.AST
 {
     public class SymbolTable
     {
@@ -15,7 +15,7 @@ namespace MyCCompiler.Analysis
 
         public void Put(Symbol symbol)
         {
-            _table.Add(symbol.Lexme, symbol);
+            _table.Add(symbol.Identifier, symbol);
         }
 
         public Symbol Get(string lexme)
