@@ -242,6 +242,24 @@ namespace MyCCompiler.AST
         }
     }
 
+    public class FunctionCall : IExpression
+    {
+        public Identifier Identifier { get; }
+        public LinkedList<IExpression> Arguments { get; }
+
+        public FunctionCall(Identifier identifier)
+        {
+            Identifier = identifier;
+            Arguments = new LinkedList<IExpression>();
+        }
+
+        public FunctionCall(Identifier identifier, LinkedList<IExpression> arguments)
+        {
+            Identifier = identifier;
+            Arguments = arguments;
+        }
+    }
+
     public class Qualifier : IDeclarationSpecifier
     {
         public bool Equals(Qualifier other)

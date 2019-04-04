@@ -563,15 +563,42 @@ namespace MyCCompiler.AST
             throw new NotSupportedException();
         }
 
-        public static IPrimaryExpression Build(CParser.PostfixExpressionContext context)
+        public static IExpression Build(CParser.PostfixExpressionContext context)
         {
             if (context.primaryExpression() != null)
             {
                 return Build(context.primaryExpression());
             }
 
+            // function call
+            if (context.children.Last().GetText() == ")")
+            {
+                var identifier = (Identifier)Build(context.postfixExpression());
+
+                if (context.argumentExpressionList() == null)
+                {
+                    return new FunctionCall(identifier);
+                }
+
+                var arguments = Build(context.argumentExpressionList());
+                return new FunctionCall(identifier, arguments);
+            }
+
             // no other postfix expresions supported currently
             throw new NotSupportedException();
+        }
+
+        // This is a list grammar. Consider using generics.
+        public static LinkedList<IExpression> Build(CParser.ArgumentExpressionListContext context)
+        {
+            if (context.argumentExpressionList() == null)
+            {
+                return CreateLinkedList(Build(context.assignmentExpression()));
+            }
+
+            var list = Build(context.argumentExpressionList());
+            list.AddLast(Build(context.assignmentExpression()));
+            return list;
         }
 
         public static IPrimaryExpression Build(CParser.PrimaryExpressionContext context)
