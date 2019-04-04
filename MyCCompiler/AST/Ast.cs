@@ -216,6 +216,16 @@ namespace MyCCompiler.AST
         }
     }
 
+    public class StringLiteral : IPrimaryExpression
+    {
+        public string Text { get; }
+
+        public StringLiteral(string text)
+        {
+            Text = text;
+        }
+    }
+
     public class BinaryExpression : IExpression
     {
         public BinaryOpKind Operator { get; }

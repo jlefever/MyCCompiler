@@ -613,6 +613,11 @@ namespace MyCCompiler.AST
                 return new Constant(context.Constant().Symbol.Text);
             }
 
+            if (context.StringLiteral() != null)
+            {
+                return new StringLiteral(context.StringLiteral()[0].Symbol.Text);
+            }
+
             // no other primary expresions supported currently
             throw new NotSupportedException();
         }
