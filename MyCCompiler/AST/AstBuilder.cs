@@ -362,8 +362,29 @@ namespace MyCCompiler.AST
                 return Build(context.expressionStatement());
             }
 
+            if (context.jumpStatement() != null)
+            {
+                return Build(context.jumpStatement());
+            }
+
             // Other statements not supported yet
             throw new NotImplementedException();
+        }
+
+        public static IReturnStatement Build(CParser.JumpStatementContext context)
+        {
+            if (context.GetChild(0).GetText() == "return")
+            {
+                if (context.expression() == null)
+                {
+                    return new ReturnVoidStatement();
+                }
+
+                var expression = Build(context.expression());
+                return new ReturnStatement(expression);
+            }
+
+            throw new NotSupportedException();
         }
 
         public static ExpressionStatement Build(CParser.ExpressionStatementContext context)
@@ -372,17 +393,16 @@ namespace MyCCompiler.AST
             return new ExpressionStatement(Build(context.expression()));
         }
 
-        // This is a list grammar. Consider using generics.
-        public static LinkedList<IExpression> Build(CParser.ExpressionContext context)
+        public static IExpression Build(CParser.ExpressionContext context)
         {
             if (context.expression() == null)
             {
-                return CreateLinkedList(Build(context.assignmentExpression()));
+                return Build(context.assignmentExpression());
             }
 
-            var list = Build(context.expression());
-            list.AddLast(Build(context.assignmentExpression()));
-            return list;
+            var left = Build(context.expression());
+            var right = Build(context.assignmentExpression());
+            return new BinaryExpression(BinaryOpKind.Comma, left, right);
         }
 
         public static IExpression Build(CParser.AssignmentExpressionContext context)

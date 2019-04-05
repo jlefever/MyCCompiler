@@ -20,6 +20,8 @@ namespace MyCCompiler.AST
 
     public interface IPrimaryExpression : IExpression { }
 
+    public interface IReturnStatement : IStatement { }
+
     public class CompilationUnit : INode
     {
         public LinkedList<IExternal> Externals { get; }
@@ -182,13 +184,25 @@ namespace MyCCompiler.AST
         }
     }
 
+    public class ReturnStatement : IReturnStatement
+    {
+        public IExpression Expression { get; }
+
+        public ReturnStatement(IExpression expression)
+        {
+            Expression = expression;
+        }
+    }
+
+    public class ReturnVoidStatement : IReturnStatement { }
+
     public class ExpressionStatement : IStatement
     {
-        public LinkedList<IExpression> Expressions { get; }
+        public IExpression Expression { get; }
 
-        public ExpressionStatement(LinkedList<IExpression> expressions)
+        public ExpressionStatement(IExpression expression)
         {
-            Expressions = expressions;
+            Expression = expression;
         }
     }
 
@@ -498,6 +512,7 @@ namespace MyCCompiler.AST
 
     public enum BinaryOpKind
     {
+        Comma,
         Or,
         And,
         BitwiseOr,
