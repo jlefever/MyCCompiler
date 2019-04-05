@@ -367,7 +367,31 @@ namespace MyCCompiler.AST
                 return Build(context.jumpStatement());
             }
 
+            if (context.selectionStatement() != null)
+            {
+                return Build(context.selectionStatement());
+            }
+
             // Other statements not supported yet
+            throw new NotImplementedException();
+        }
+
+        public static IIfStatement Build(CParser.SelectionStatementContext context)
+        {
+            if (context.GetChild(0).GetText() == "if")
+            {
+                var expression = Build(context.expression());
+                var body = Build(context.statement()[0]);
+
+                if (context.statement().Length == 2)
+                {
+                    var @else = Build(context.statement()[1]);
+                    return new IfElseStatement(expression, body, @else);
+                }
+
+                return new IfStatement(expression, body);
+            }
+
             throw new NotImplementedException();
         }
 

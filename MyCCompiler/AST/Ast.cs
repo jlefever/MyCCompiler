@@ -22,6 +22,12 @@ namespace MyCCompiler.AST
 
     public interface IReturnStatement : IStatement { }
 
+    public interface IIfStatement : IStatement
+    {
+        IExpression Expression { get; }
+        IStatement Body { get; }
+    }
+
     public class CompilationUnit : INode
     {
         public LinkedList<IExternal> Externals { get; }
@@ -181,6 +187,32 @@ namespace MyCCompiler.AST
         {
             DeclarationSpecifiers = declarationSpecifiers;
             Declarator = declarator;
+        }
+    }
+
+    public class IfStatement : IIfStatement
+    {
+        public IExpression Expression { get; }
+        public IStatement Body { get; }
+
+        public IfStatement(IExpression expression, IStatement body)
+        {
+            Expression = expression;
+            Body = body;
+        }
+    }
+
+    public class IfElseStatement : IIfStatement
+    {
+        public IExpression Expression { get; }
+        public IStatement Body { get; }
+        public IStatement Else { get; }
+
+        public IfElseStatement(IExpression expression, IStatement body, IStatement @else)
+        {
+            Expression = expression;
+            Body = body;
+            Else = @else;
         }
     }
 
