@@ -37,21 +37,20 @@ namespace MyCCompiler.AST
 
         public void Visit(FunctionDefinition node)
         {
-            Visit(node.DeclarationSpecifiers);
-            Visit(node.FunctionDeclarator);
+            EnterScope();
+            var declarationType = BuildDeclarationType(node.DeclarationSpecifiers);
+            var functionType = BuildFunctionType(node.FunctionDeclarator, declarationType);
             Visit(node.CompoundStatement);
+            ExitScope();
+            SetIdentifierType(node.FunctionDeclarator.Identifier, functionType);
         }
 
         public void Visit(CompoundStatement node)
         {
-            _currSymbolTable = new SymbolTable(_currSymbolTable);
-
             foreach (var statement in node.Statements)
             {
                 Visit(statement);
             }
-
-            _currSymbolTable = _currSymbolTable.Previous;
         }
 
         public void Visit(IStatement node)
@@ -59,7 +58,9 @@ namespace MyCCompiler.AST
             switch (node)
             {
                 case CompoundStatement n:
+                    EnterScope();
                     Visit(n);
+                    ExitScope();
                     break;
                 case Declaration n:
                     Visit(n);
@@ -72,46 +73,48 @@ namespace MyCCompiler.AST
 
         public void Visit(Declaration node)
         {
-            Visit(node.DeclarationSpecifiers);
+            var type = BuildDeclarationType(node.DeclarationSpecifiers);
 
             foreach (var initDeclarator in node.InitDeclarators)
             {
-                Visit(initDeclarator);
+                Visit(initDeclarator, type);
             }
         }
 
-        public void Visit(IInitDeclarator node)
+        public void Visit(IInitDeclarator node, IPointable type)
         {
             switch (node)
             {
                 case Declarator n:
-                    Visit(n);
+                    Visit(n, type);
                     break;
                 case InitializationDeclarator n:
-                    Visit(n);
+                    Visit(n, type);
                     break;
             }
         }
 
-        public void Visit(Declarator node)
+        public void Visit(Declarator node, IPointable type)
         {
-            Visit(node.DirectDeclarator);
+            Visit(node.DirectDeclarator, type);
         }
 
-        public void Visit(InitializationDeclarator node)
+        public void Visit(InitializationDeclarator node, IPointable type)
         {
-            Visit(node.Declarator);
+            Visit(node.Declarator, type);
+            Visit(node.Expression);
         }
 
-        public void Visit(IDirectDeclarator node)
+        public void Visit(IDirectDeclarator node, IPointable type)
         {
             switch (node)
             {
                 case Identifier n:
+                    SetIdentifierType(n, type);
                     Visit(n);
                     break;
                 case FunctionDeclarator n:
-                    Visit(n);
+                    BuildFunctionType(n, type);
                     break;
             }
         }
@@ -121,27 +124,21 @@ namespace MyCCompiler.AST
             node.Symbol = _currSymbolTable.Get(node.Text);
         }
 
-        public void Visit(FunctionDeclarator node)
+        public Function BuildFunctionType(FunctionDeclarator node, IPointable type)
         {
-            Visit(node.Identifier);
-            Visit(node.ParameterList);
-        }
+            var parameterTypes = new LinkedList<IPointable>();
 
-        public void Visit(ParameterList node)
-        {
-            foreach (var parameter in node.Parameters)
+            foreach (var parameter in node.ParameterList.Parameters)
             {
-                Visit(parameter);
+                var declarationType = BuildDeclarationType(parameter.DeclarationSpecifiers);
+                parameterTypes.AddLast(declarationType);
+                Visit(parameter.Declarator, declarationType);
             }
+
+            return new Function(type, parameterTypes.ToArray(), node.ParameterList.Variadic);
         }
 
-        public void Visit(Parameter node)
-        {
-            Visit(node.DeclarationSpecifiers);
-            Visit(node.Declarator);
-        }
-
-        public void Visit(DeclarationSpecifiers node)
+        public IPointable BuildDeclarationType(DeclarationSpecifiers node)
         {
             var keywords = new LinkedList<TypeKeywordKind>();
             var pointers = new LinkedList<ISet<Qualifier>>();
@@ -172,14 +169,13 @@ namespace MyCCompiler.AST
             {
                 pointable = new PointerTo(pointable, set);
             }
+
+            return pointable;
         }
 
         public void Visit(ExpressionStatement node)
         {
-            foreach (var expression in node.Expressions)
-            {
-                Visit(expression);
-            }
+            Visit(node.Expression);
         }
 
         public void Visit(IExpression node)
@@ -234,6 +230,21 @@ namespace MyCCompiler.AST
         public void Visit(Constant node)
         {
 
+        }
+
+        public void SetIdentifierType(Identifier identifier, IType type)
+        {
+            _currSymbolTable.Put(new Symbol(identifier.Text, type));
+        }
+
+        public void EnterScope()
+        {
+            _currSymbolTable = new SymbolTable(_currSymbolTable);
+        }
+
+        public void ExitScope()
+        {
+            _currSymbolTable = _currSymbolTable.Previous;
         }
 
         private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap = 
