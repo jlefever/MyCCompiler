@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using static MyCCompiler.AST.TypeKeywordKind;
 
@@ -57,6 +56,12 @@ namespace MyCCompiler.AST
         {
             switch (node)
             {
+                case IIfStatement n:
+                    Visit(n);
+                    break;
+                case IReturnStatement n:
+                    Visit(n);
+                    break;
                 case CompoundStatement n:
                     EnterScope();
                     Visit(n);
@@ -68,6 +73,25 @@ namespace MyCCompiler.AST
                 case ExpressionStatement n:
                     Visit(n);
                     break;
+            }
+        }
+
+        public void Visit(IIfStatement node)
+        {
+            Visit(node.Expression);
+            Visit(node.Body);
+
+            if (node is IfElseStatement n)
+            {
+                Visit(n.Else);
+            }
+        }
+
+        public void Visit(IReturnStatement node)
+        {
+            if (node is ReturnStatement n)
+            {
+                Visit(n.Expression);
             }
         }
 
@@ -194,6 +218,9 @@ namespace MyCCompiler.AST
                 case UnaryExpression n:
                     Visit(n);
                     break;
+                case FunctionCall n:
+                    Visit(n);
+                    break;
             }
         }
 
@@ -216,20 +243,20 @@ namespace MyCCompiler.AST
 
         public void Visit(IPrimaryExpression node)
         {
-            switch (node)
+            if (node is Identifier n)
             {
-                case Constant n:
-                    Visit(n);
-                    break;
-                case Identifier n:
-                    Visit(n);
-                    break;
+                Visit(n);
             }
         }
 
-        public void Visit(Constant node)
+        public void Visit(FunctionCall node)
         {
+            Visit(node.Identifier);
 
+            foreach (var argument in node.Arguments)
+            {
+                Visit(argument);
+            }
         }
 
         public void SetIdentifierType(Identifier identifier, IType type)
@@ -237,17 +264,17 @@ namespace MyCCompiler.AST
             _currSymbolTable.Put(new Symbol(identifier.Text, type));
         }
 
-        public void EnterScope()
+        private void EnterScope()
         {
             _currSymbolTable = new SymbolTable(_currSymbolTable);
         }
 
-        public void ExitScope()
+        private void ExitScope()
         {
             _currSymbolTable = _currSymbolTable.Previous;
         }
 
-        private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap = 
+        private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap =
             new Dictionary<TypeKeywordKind[], PrimitiveKind>(new EqualityComparer())
             {
                 { new [] { TypeKeywordKind.Char }, PrimitiveKind.Char },
