@@ -138,14 +138,17 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case FunctionDeclarator n:
-                    BuildFunctionType(n, type);
+                    EnterScope();
+                    var functionType = BuildFunctionType(n, type);
+                    ExitScope();
+                    SetIdentifierType(n.Identifier, functionType);
                     break;
             }
         }
 
         public void Visit(Identifier node)
         {
-            node.Symbol = _currSymbolTable.Get(node.Text);
+            node.Type = _currSymbolTable.Get(node.Text);
         }
 
         public Function BuildFunctionType(FunctionDeclarator node, IPointable type)
@@ -261,7 +264,7 @@ namespace MyCCompiler.AST
 
         public void SetIdentifierType(Identifier identifier, IType type)
         {
-            _currSymbolTable.Put(new Symbol(identifier.Text, type));
+            _currSymbolTable.Put(identifier.Text, type);
         }
 
         private void EnterScope()

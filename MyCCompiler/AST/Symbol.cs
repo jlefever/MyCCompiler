@@ -6,18 +6,6 @@ namespace MyCCompiler.AST
 
     public interface IPointable : IType { }
 
-    public class Symbol
-    {
-        public string Identifier { get; }
-        public IType Type { get; }
-
-        public Symbol(string identifier, IType type)
-        {
-            Identifier = identifier;
-            Type = type;
-        }
-    }
-
     public class Primitive : IPointable
     {
         public PrimitiveKind PrimitiveKind { get; }

@@ -98,7 +98,7 @@ namespace MyCCompiler.AST
 
     public class Identifier : IDirectDeclarator, IPrimaryExpression
     {
-        public Symbol Symbol { get; set; }
+        public IType Type { get; set; }
         public string Text { get; }
 
         public Identifier(string text)

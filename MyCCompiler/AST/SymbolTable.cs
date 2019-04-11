@@ -5,26 +5,26 @@ namespace MyCCompiler.AST
     public class SymbolTable
     {
         public readonly SymbolTable Previous;
-        private readonly IDictionary<string, Symbol> _table;
+        private readonly IDictionary<string, IType> _table;
 
         public SymbolTable(SymbolTable previous)
         {
             Previous = previous;
-            _table = new Dictionary<string, Symbol>();
+            _table = new Dictionary<string, IType>();
         }
 
-        public void Put(Symbol symbol)
+        public void Put(string text, IType type)
         {
-            _table.Add(symbol.Identifier, symbol);
+            _table.Add(text, type);
         }
 
-        public Symbol Get(string lexme)
+        public IType Get(string text)
         {
             for (var st = this; st != null; st = st.Previous)
             {
-                if (st._table.ContainsKey(lexme))
+                if (st._table.ContainsKey(text))
                 {
-                    return st._table[lexme];
+                    return st._table[text];
                 }
             }
 
