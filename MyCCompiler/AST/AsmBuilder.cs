@@ -87,13 +87,54 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case ExpressionStatement n:
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
             }
         }
 
-        private void Visit(Declaration declaration)
+        private void Visit(ExpressionStatement node)
         {
-            foreach (var initDeclarators in declaration.InitDeclarators)
+            if (!(node.Expression is FunctionCall))
+            {
+                throw new NotImplementedException();
+            }
+
+            var functionCall = node.Expression as FunctionCall;
+            var offset = functionCall.Arguments.Count * 4;
+
+            foreach (var expression in Reverse(functionCall.Arguments))
+            {
+                offset = offset - 4;
+
+                if (expression is Constant)
+                {
+                    var integer = Convert.ToInt32(((Constant)expression).Text);
+                    Add(new Mov(new IntegerConstant(integer), new Memory(Register.Esp, offset)));
+                    continue;
+                }
+
+                if (expression is StringLiteral)
+                {
+                    var text = ((StringLiteral) expression).Text;
+
+                    // TODO: Fix this hacky garbage
+                    Add(new DirectText(".section .rdata,\"dr\""));
+                    Add(new Label("TheMagicString"));
+                    Add(new Ascii(text));
+                    Add(new TextDirective());
+                    Add(new Mov(new TextConstant("TheMagicString"), new Memory(Register.Esp, offset)));
+                    continue;
+                }
+
+                throw new NotImplementedException();
+            }
+
+            Add(new Call("_" + functionCall.Identifier.Text));
+        }
+
+        private void Visit(Declaration node)
+        {
+            foreach (var initDeclarators in node.InitDeclarators)
             {
                 switch (initDeclarators)
                 {
@@ -107,9 +148,9 @@ namespace MyCCompiler.AST
             }
         }
 
-        private void Visit(Declarator declarator)
+        private void Visit(Declarator node)
         {
-            var directDeclarator = declarator.DirectDeclarator;
+            var directDeclarator = node.DirectDeclarator;
 
             if (!(directDeclarator is Identifier))
             {
@@ -123,17 +164,17 @@ namespace MyCCompiler.AST
             Add(new Sub(new IntegerConstant(4), Register.Esp));
         }
 
-        private void Visit(InitializationDeclarator initializationDeclarator)
+        private void Visit(InitializationDeclarator node)
         {
-            Visit(initializationDeclarator.Declarator);
+            Visit(node.Declarator);
 
-            if (!(initializationDeclarator.Expression is Constant))
+            if (!(node.Expression is Constant))
             {
                 // TODO: Evaluate expression trees
                 throw new NotImplementedException();
             }
 
-            var constant = initializationDeclarator.Expression as Constant;
+            var constant = node.Expression as Constant;
             var integer = Convert.ToInt32(constant.Text);
 
             // TODO: Use offset
@@ -143,6 +184,16 @@ namespace MyCCompiler.AST
         private void Add(ILine line)
         {
             _lines.AddLast(line);
+        }
+
+        private IEnumerable<T> Reverse<T>(LinkedList<T> list)
+        {
+            var element = list.Last;
+            while (element != null)
+            {
+                yield return element.Value;
+                element = element.Previous;
+            }
         }
 
         private static Register[] _callerSaved = { Register.Eax, Register.Ecx, Register.Edx };

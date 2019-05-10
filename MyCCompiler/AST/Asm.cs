@@ -202,4 +202,36 @@
             return "ret";
         }
     }
+
+    public class Ascii : ILine
+    {
+        public string Text { get; }
+
+        public Ascii(string text)
+        {
+            // TODO: Do this somewhere else
+            Text = text.Substring(1, text.Length - 2);
+        }
+
+        public override string ToString()
+        {
+            return $".ascii \"{Text}\\0\"";
+        }
+    }
+
+    // Don't use this
+    public class DirectText : ILine
+    {
+        public string Line { get; }
+
+        public DirectText(string line)
+        {
+            Line = line;
+        }
+
+        public override string ToString()
+        {
+            return Line;
+        }
+    }
 }
