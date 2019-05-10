@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
-using System.IO;
 using MyCCompiler.AST;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MyCCompiler
 {
@@ -23,6 +24,30 @@ namespace MyCCompiler
 
             var symbolBuilder = new SymbolBuilder();
             symbolBuilder.Visit(ast);
+
+            var asmBuilder = new AsmBuilder();
+            var asm = asmBuilder.Visit(ast);
+
+            if (args.Length == 1)
+            {
+                var index = args[0].LastIndexOf('.');
+                var filename = args[0].Substring(0, index) + ".s";
+                WriteAsm(asm, filename);
+                return;
+            }
+
+            WriteAsm(asm, args[1]);
+        }
+
+        private static void WriteAsm(IEnumerable<ILine> lines, string filename)
+        {
+            using (var writer = new StreamWriter(filename))
+            {
+                foreach (var line in lines)
+                {
+                    writer.WriteLine(line);
+                }
+            }
         }
     }
 }

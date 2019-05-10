@@ -97,21 +97,41 @@
         }
     }
 
-    public class Mov : ILine
+    public abstract class BinaryInstruction : ILine
     {
+        public string Instruction { get; }
         public IOperand Source { get; }
         public IWritableOperand Destination { get; }
 
-        public Mov(IOperand source, IWritableOperand destination)
+        protected BinaryInstruction(string instruction, IOperand source, IWritableOperand destination)
         {
+            Instruction = instruction;
             Source = source;
             Destination = destination;
         }
 
         public override string ToString()
         {
-            return $"movl\t{Source}, {Destination}";
+            return $"{Instruction}\t{Source}, {Destination}";
         }
+    }
+
+    public class Mov : BinaryInstruction
+    {
+        public Mov(IOperand source, IWritableOperand destination)
+            : base("movl", source, destination) { }
+    }
+
+    public class And : BinaryInstruction
+    {
+        public And(IOperand source, IWritableOperand destination)
+            : base("andl", source, destination) { }
+    }
+
+    public class Sub : BinaryInstruction
+    {
+        public Sub(IOperand source, IWritableOperand destination)
+            : base("subl", source, destination) { }
     }
 
     public class Call : ILine
@@ -129,28 +149,11 @@
         }
     }
 
-    public class And : ILine
-    {
-        public IOperand Source { get; }
-        public IWritableOperand Destination { get; }
-
-        public And(IOperand source, IWritableOperand destination)
-        {
-            Source = source;
-            Destination = destination;
-        }
-
-        public override string ToString()
-        {
-            return $"andl\t{Source}, {Destination}";
-        }
-    }
-
-    public class Globl : ILine
+    public class GloblDirective : ILine
     {
         public string Text { get; }
 
-        public Globl(string text)
+        public GloblDirective(string text)
         {
             Text = text;
         }
@@ -158,6 +161,14 @@
         public override string ToString()
         {
             return $".globl {Text}";
+        }
+    }
+
+    public class TextDirective : ILine
+    {
+        public override string ToString()
+        {
+            return ".text";
         }
     }
 
