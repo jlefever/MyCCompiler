@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\AsmBuilder.cs" />
     <Compile Include="AST\AstBuilder.cs" />
     <Compile Include="AST\Ast.cs" />
+    <Compile Include="AST\Asm.cs" />
     <Compile Include="AST\Symbol.cs" />
     <Compile Include="AST\SymbolBuilder.cs" />
     <Compile Include="Program.cs" />
