@@ -1,51 +1,41 @@
-﻿using System.Collections.Generic;
-
-namespace MyCCompiler.AST
+﻿namespace MyCCompiler.AST
 {
-    public enum RegisterKind
-    {
-        Eax,
-        Ebx,
-        Ecx,
-        Edx,
-        Esi,
-        Edi,
-        Esp,
-        Ebp
-    }
-
-    public static class RegisterKindExtensions
-    {
-        public static string GetName(this RegisterKind registerKind)
-        {
-            return RegisterKindMap[registerKind];
-        }
-
-        private static readonly IDictionary<RegisterKind, string> RegisterKindMap = new Dictionary<RegisterKind, string>
-        {
-            { RegisterKind.Eax, "eax" },
-            { RegisterKind.Ebx, "ebx" },
-            { RegisterKind.Ecx, "ecx" },
-            { RegisterKind.Edx, "edx" },
-            { RegisterKind.Esi, "esi" },
-            { RegisterKind.Edi, "edi" },
-            { RegisterKind.Esp, "esp" },
-            { RegisterKind.Ebp, "ebp" }
-        };
-    }
-
     public interface IOperand { }
 
     public interface IWritableOperand : IOperand { }
 
+    public class Register : IWritableOperand
+    {
+        public static Register Eax = new Register("eax");
+        public static Register Ebx = new Register("ebx");
+        public static Register Ecx = new Register("ecx");
+        public static Register Edx = new Register("edx");
+        public static Register Esi = new Register("esi");
+        public static Register Edi = new Register("edi");
+        public static Register Esp = new Register("esp");
+        public static Register Ebp = new Register("ebp");
+
+        public string Name { get; }
+
+        private Register(string name)
+        {
+            Name = name;
+        }
+
+        public override string ToString()
+        {
+            return "%" + Name;
+        }
+    }
+
     public class Memory : IWritableOperand
     {
-        public RegisterKind RegisterKind { get; }
+        public Register Register { get; }
         public int Offset { get; }
 
-        public Memory(RegisterKind registerKind, int offset)
+        public Memory(Register register, int offset)
         {
-            RegisterKind = registerKind;
+            Register = register;
             Offset = offset;
         }
 
@@ -53,25 +43,10 @@ namespace MyCCompiler.AST
         {
             if (Offset == 0)
             {
-                return $"%({RegisterKind.GetName()})";
+                return $"({Register})";
             }
 
-            return $"{Offset}(%{RegisterKind.GetName()})";
-        }
-    }
-
-    public class Register : IWritableOperand
-    {
-        public RegisterKind RegisterKind { get; }
-
-        public Register(RegisterKind registerKind)
-        {
-            RegisterKind = registerKind;
-        }
-
-        public override string ToString()
-        {
-            return "%" + RegisterKind.GetName();
+            return $"{Offset}({Register})";
         }
     }
 
@@ -151,6 +126,23 @@ namespace MyCCompiler.AST
         public override string ToString()
         {
             return $"call\t{Text}";
+        }
+    }
+
+    public class And : ILine
+    {
+        public IOperand Source { get; }
+        public IWritableOperand Destination { get; }
+
+        public And(IOperand source, IWritableOperand destination)
+        {
+            Source = source;
+            Destination = destination;
+        }
+
+        public override string ToString()
+        {
+            return $"andl\t{Source}, {Destination}";
         }
     }
 

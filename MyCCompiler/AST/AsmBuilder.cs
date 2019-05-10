@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace MyCCompiler.AST
 {
@@ -37,22 +33,30 @@ namespace MyCCompiler.AST
             list.AddLast(new Globl(funcName));
             list.AddLast(new Label(funcName));
 
-            // Write preamble
+            // Preamble
             // Save the old base pointer value
-            list.AddLast(new Push(new Register(RegisterKind.Ebp)));
-            list.AddLast(new Mov(new Register(RegisterKind.Esp), new Register(RegisterKind.Ebp)));
+            list.AddLast(new Push(Register.Ebp));
+
+            // Create stack frame
+            list.AddLast(new Mov(Register.Esp, Register.Ebp));
+
+            // Aligns the stack frame to a 16 byte boundary 
+            list.AddLast(new And(new IntegerConstant(-16), Register.Esp));
+
+            // Reserve space on the stack for local variables?
+            // Or just do it on the fly whenever a variable is declared?
+
+            // Setup GCC (might be optional)
             list.AddLast(new Call("___main"));
 
             // Write body
 
-            // Write epilogue
+            // Epilogue
             list.AddLast(new Leave());
             list.AddLast(new Ret());
         }
 
-        private static RegisterKind[] _callerSaved = { RegisterKind.Eax, RegisterKind.Ecx, RegisterKind.Edx };
-        private static RegisterKind[] _calleeSaved = { RegisterKind.Ebx, RegisterKind.Edi, RegisterKind.Esi };
-
-
+        private static Register[] _callerSaved = { Register.Eax, Register.Ecx, Register.Edx };
+        private static Register[] _calleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
     }
 }
