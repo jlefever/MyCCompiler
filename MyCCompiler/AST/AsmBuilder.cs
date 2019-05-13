@@ -89,35 +89,160 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case ExpressionStatement n:
+                    Visit(n.Expression);
+                    break;
+            }
+        }
+
+        private void Visit(IExpression node)
+        {
+            switch (node)
+            {
+                case IPrimaryExpression n:
+                    Visit(n);
+                    break;
+                case AssignmentExpression n:
+                    Visit(n);
+                    break;
+                case BinaryExpression n:
+                    Visit(n);
+                    break;
+                case UnaryExpression n:
+                    Visit(n);
+                    break;
+                case FunctionCall n:
                     Visit(n);
                     break;
             }
         }
 
-        private void Visit(ExpressionStatement node)
+        private void Visit(IPrimaryExpression node)
         {
-            if (!(node.Expression is FunctionCall))
+            switch (node)
             {
+                case Identifier n:
+                    Visit(n);
+                    break;
+                case Constant n:
+                    Visit(n);
+                    break;
+                case StringLiteral n:
+                    // TODO: Add support for string literals
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void Visit(Identifier node)
+        {
+            var offset = node.Symbol.StackOffset;
+            Add(new Mov(new Memory(Register.Esp, offset), ResultRegister));
+        }
+
+        private void Visit(Constant node)
+        {
+            var integer = new IntegerConstant(Convert.ToInt32(node.Text));
+            Add(new Mov(integer, ResultRegister));
+        }
+
+        private void Visit(AssignmentExpression node)
+        {
+            if (node.AssignmentKind != AssignmentKind.Assign)
+            {
+                // TODO: Different kind of assignments
                 throw new NotImplementedException();
             }
 
-            var functionCall = (FunctionCall)node.Expression;
-            var offset = functionCall.Arguments.Count * 4;
+            // Evaluate the RHS expression first
+            // Result will be in ResultRegister
+            Visit(node.Expression);
 
-            foreach (var expression in Reverse(functionCall.Arguments))
+            var offset = node.Identifier.Symbol.StackOffset;
+            Add(new Mov(ResultRegister, new Memory(Register.Esp, offset)));
+        }
+
+        private void Visit(BinaryExpression node)
+        {
+            // Evalate the left tree and put result in ResultRegister
+            Visit(node.Left);
+
+            // Push the result of the left tree onto the stack
+            Add(new Push(ResultRegister));
+
+            // Evalate the right tree and put result in ResultRegister
+            Visit(node.Right);
+
+            // Pop the left result into a secondary register
+            Add(new Pop(AltRegister));
+
+            switch (node.Operator)
+            {
+                case BinaryOpKind.Comma:
+                    break;
+                case BinaryOpKind.Or:
+                    break;
+                case BinaryOpKind.And:
+                    break;
+                case BinaryOpKind.BitwiseOr:
+                    break;
+                case BinaryOpKind.BitwiseXor:
+                    break;
+                case BinaryOpKind.BitwiseAnd:
+                    break;
+                case BinaryOpKind.EqualTo:
+                    break;
+                case BinaryOpKind.NotEqualTo:
+                    break;
+                case BinaryOpKind.LessThan:
+                    break;
+                case BinaryOpKind.GreaterThan:
+                    break;
+                case BinaryOpKind.LessThanOrEqualTo:
+                    break;
+                case BinaryOpKind.GreaterThanOrEqualTo:
+                    break;
+                case BinaryOpKind.LShift:
+                    break;
+                case BinaryOpKind.RShift:
+                    break;
+                case BinaryOpKind.Addition:
+                    Add(new Add(AltRegister, ResultRegister));
+                    break;
+                case BinaryOpKind.Subtraction:
+                    Add(new Sub(AltRegister, ResultRegister));
+                    break;
+                case BinaryOpKind.Multiplication:
+                    Add(new Imul(AltRegister, ResultRegister));
+                    break;
+                case BinaryOpKind.Division:
+                    break;
+                case BinaryOpKind.Modulus:
+                    break;
+            }
+        }
+
+        private void Visit(UnaryExpression node)
+        {
+            // Evalate and put result in ResultRegister
+            Visit(node.Expression);
+
+            switch (node.Operator)
+            {
+                case UnaryOpKind.AddressOf:
+                    break;
+            }
+        }
+
+        private void Visit(FunctionCall node)
+        {
+            var offset = node.Arguments.Count * 4;
+
+            foreach (var expression in Reverse(node.Arguments))
             {
                 offset = offset - 4;
 
-                if (expression is Constant)
+                if (expression is StringLiteral literal)
                 {
-                    var integer = Convert.ToInt32(((Constant)expression).Text);
-                    Add(new Mov(new IntegerConstant(integer), new Memory(Register.Esp, offset)));
-                    continue;
-                }
-
-                if (expression is StringLiteral)
-                {
-                    var text = ((StringLiteral) expression).Text;
+                    var text = literal.Text;
 
                     // TODO: Fix this hacky garbage
                     Add(new DirectText(".section .rdata,\"dr\""));
@@ -128,10 +253,11 @@ namespace MyCCompiler.AST
                     continue;
                 }
 
-                throw new NotImplementedException();
+                Visit(expression);
+                Add(new Mov(ResultRegister, new Memory(Register.Esp, offset)));
             }
 
-            Add(new Call("_" + functionCall.Identifier.Text));
+            Add(new Call("_" + node.Identifier.Text));
         }
 
         private void Visit(Declaration node)
@@ -192,6 +318,8 @@ namespace MyCCompiler.AST
             }
         }
 
+        private static readonly Register ResultRegister = Register.Eax;
+        private static readonly Register AltRegister = Register.Edx;
         private static Register[] _callerSaved = { Register.Eax, Register.Ecx, Register.Edx };
         private static Register[] _calleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
     }

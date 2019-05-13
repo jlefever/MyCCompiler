@@ -82,19 +82,31 @@
 
     public interface ILine { }
 
-    public class Push : ILine
+    public abstract class UnaryInstruction : ILine
     {
-        public IOperand Operand { get; }
+        public string Instruction { get; }
+        public IWritableOperand Destination { get; }
 
-        public Push(IOperand operand)
+        protected UnaryInstruction(string instruction, IWritableOperand destination)
         {
-            Operand = operand;
+            Instruction = instruction;
+            Destination = destination;
         }
 
         public override string ToString()
         {
-            return $"\tpushl\t{Operand}";
+            return $"\t{Instruction}\t{Destination}";
         }
+    }
+
+    public class Push : UnaryInstruction
+    {
+        public Push(IWritableOperand destination) : base("push", destination) { }
+    }
+
+    public class Pop : UnaryInstruction
+    {
+        public Pop(IWritableOperand destination) : base("pop", destination) { }
     }
 
     public abstract class BinaryInstruction : ILine
@@ -132,6 +144,18 @@
     {
         public Sub(IOperand source, IWritableOperand destination)
             : base("subl", source, destination) { }
+    }
+
+    public class Add : BinaryInstruction
+    {
+        public Add(IOperand source, IWritableOperand destination)
+            : base("addl", source, destination) { }
+    }
+
+    public class Imul : BinaryInstruction
+    {
+        public Imul(IOperand source, IWritableOperand destination)
+            : base("imull", source, destination) { }
     }
 
     public class Call : ILine
