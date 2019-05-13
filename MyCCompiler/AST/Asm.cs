@@ -85,28 +85,28 @@
     public abstract class UnaryInstruction : ILine
     {
         public string Instruction { get; }
-        public IWritableOperand Destination { get; }
+        public IOperand Operand { get; }
 
-        protected UnaryInstruction(string instruction, IWritableOperand destination)
+        protected UnaryInstruction(string instruction, IOperand operand)
         {
             Instruction = instruction;
-            Destination = destination;
+            Operand = operand;
         }
 
         public override string ToString()
         {
-            return $"\t{Instruction}\t{Destination}";
+            return $"\t{Instruction}\t{Operand}";
         }
     }
 
     public class Push : UnaryInstruction
     {
-        public Push(IWritableOperand destination) : base("push", destination) { }
+        public Push(IOperand destination) : base("push", destination) { }
     }
 
     public class Pop : UnaryInstruction
     {
-        public Pop(IWritableOperand destination) : base("pop", destination) { }
+        public Pop(IOperand destination) : base("pop", destination) { }
     }
 
     public abstract class BinaryInstruction : ILine

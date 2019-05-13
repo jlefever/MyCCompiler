@@ -43,19 +43,36 @@ namespace MyCCompiler.AST
 
         private void Visit(FunctionDefinition node)
         {
+            // First, we want to assign offsets to our parameters so we can find them
+            // when evaluating expresions. We start at 8 so as to skip over the saved
+            // EBP on the stack and the return address placed by the call instruction.
+            var offset = 8;
+            var parameters = node.FunctionDeclarator.ParameterList.Parameters;
+
+            foreach (var parameter in parameters)
+            {
+                if (!(parameter.Declarator.DirectDeclarator is Identifier))
+                {
+                    throw new NotSupportedException();
+                }
+
+                var identifier = (Identifier)parameter.Declarator.DirectDeclarator;
+                identifier.Symbol.StackOffset = offset;
+                offset = offset + 4;
+            }
+
             // Create globl directive and label for function
             var funcName = "_" + node.FunctionDeclarator.Identifier.Text;
             Add(new GloblDirective(funcName));
             Add(new Label(funcName));
 
-            // Preamble
             // Save the old base pointer value
             Add(new Push(Register.Ebp));
 
             // Create stack frame
             Add(new Mov(Register.Esp, Register.Ebp));
 
-            // Aligns the stack frame to a 16 byte boundary 
+            // Aligns the stack frame to a 16 byte boundary
             Add(new And(new IntegerConstant(-16), Register.Esp));
 
             // Reserve space on the stack for local variables
@@ -71,8 +88,11 @@ namespace MyCCompiler.AST
                 Visit(statement);
             }
 
-            // Epilogue
+            // Leave will move the value in EBP into ESP, deallocating any local variables
+            // Leave also pops the old base pointer value off the stack
             Add(new Leave());
+
+            // Remove return address from stack (placed by the call instruction)
             Add(new Ret());
         }
 
@@ -83,7 +103,8 @@ namespace MyCCompiler.AST
                 case IIfStatement n:
                     throw new NotImplementedException();
                 case IReturnStatement n:
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
                 case CompoundStatement n:
                     throw new NotImplementedException();
                 case Declaration n:
@@ -138,8 +159,8 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case StringLiteral n:
-                    // TODO: Add support for string literals
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
             }
         }
 
@@ -153,6 +174,18 @@ namespace MyCCompiler.AST
         {
             var integer = new IntegerConstant(Convert.ToInt32(node.Text));
             Add(new Mov(integer, ResultRegister));
+        }
+
+        private void Visit(StringLiteral node)
+        {
+            var label = $"SL{_asciiCount}";
+            _asciiCount++;
+
+            Add(new DirectText(".section .rdata"));
+            Add(new Label(label));
+            Add(new Ascii(node.Text));
+            Add(new TextDirective());
+            Add(new Mov(new TextConstant(label), ResultRegister));
         }
 
         private void Visit(AssignmentExpression node)
@@ -245,31 +278,28 @@ namespace MyCCompiler.AST
 
         private void Visit(FunctionCall node)
         {
-            var offset = node.Arguments.Count * 4;
+            // We treat a function call like any other expression. The only obligation any
+            // expression has is to place its result in ResultRegister. An expression can
+            // arbitrarly change any other register (other than ESP or EBP). Because of this,
+            // there is no use in saving the convential "caller-saved" registers on the stack.
 
-            // Are we supposed to be moving past the stack pointer?
+            // If we  were to adapt a smarter process for evaluating expressions, we might
+            // have to save the "caller-saved" registers.
+
+            // Push arguments onto stack in reverse order
             foreach (var expression in Reverse(node.Arguments))
             {
-                offset = offset - 4;
-
-                // This should probably be used to handle string literals in general
-                // Or maybe string literals should only be valid for function calls?
-                if (expression is StringLiteral literal)
-                {
-                    Add(new DirectText(".section .rdata"));
-                    Add(new Label($"SL{_asciiCount}"));
-                    Add(new Ascii(literal.Text));
-                    Add(new TextDirective());
-                    Add(new Mov(new TextConstant($"SL{_asciiCount}"), new Memory(Register.Esp, offset)));
-                    _asciiCount++;
-                    continue;
-                }
-
                 Visit(expression);
-                Add(new Mov(ResultRegister, new Memory(Register.Esp, offset)));
+                Add(new Push(ResultRegister));
             }
 
+            // Call function
             Add(new Call("_" + node.Identifier.Text));
+
+            // Remove arguments from stack
+            Add(new Add(new IntegerConstant(node.Arguments.Count * 4), Register.Esp));
+
+            // Here is where we would restore contents of caller-saved registers
         }
 
         private void Visit(Declaration node)
@@ -297,8 +327,8 @@ namespace MyCCompiler.AST
             }
 
             var identifier = (Identifier)node.DirectDeclarator;
+            _currFrameOffset = _currFrameOffset - 4;
             identifier.Symbol.StackOffset = _currFrameOffset;
-            _currFrameOffset = _currFrameOffset + 4;
         }
 
         // This shares code with AssignmentExpression
@@ -344,7 +374,7 @@ namespace MyCCompiler.AST
 
         private static readonly Register ResultRegister = Register.Eax;
         private static readonly Register AltRegister = Register.Edx;
-        private static Register[] _callerSaved = { Register.Eax, Register.Ecx, Register.Edx };
-        private static Register[] _calleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
+        private static readonly Register[] CallerSaved = { Register.Eax, Register.Ecx, Register.Edx };
+        private static readonly Register[] CalleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
     }
 }
