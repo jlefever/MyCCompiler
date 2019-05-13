@@ -56,8 +56,10 @@ namespace MyCCompiler.AST
             // Aligns the stack frame to a 16 byte boundary 
             Add(new And(new IntegerConstant(-16), Register.Esp));
 
-            // Reserve space on the stack for local variables?
-            // Or just do it on the fly whenever a variable is declared?
+            // Reserve space on the stack for local variables
+            var stackFrameSize = node.CompoundStatement.SymbolTable.Count * 4;
+            _currFrameOffset = stackFrameSize;
+            Add(new Sub(new IntegerConstant(stackFrameSize), Register.Esp));
 
             // Setup GCC (optional)
             // list.AddLast(new Call("___main"));
@@ -99,7 +101,7 @@ namespace MyCCompiler.AST
                 throw new NotImplementedException();
             }
 
-            var functionCall = node.Expression as FunctionCall;
+            var functionCall = (FunctionCall)node.Expression;
             var offset = functionCall.Arguments.Count * 4;
 
             foreach (var expression in Reverse(functionCall.Arguments))
@@ -150,18 +152,15 @@ namespace MyCCompiler.AST
 
         private void Visit(Declarator node)
         {
-            var directDeclarator = node.DirectDeclarator;
-
-            if (!(directDeclarator is Identifier))
+            if (!(node.DirectDeclarator is Identifier))
             {
-                throw new NotImplementedException();
+                // This should never be a FunctionDeclarator
+                throw new NotSupportedException();
             }
 
-            var identifier = directDeclarator as Identifier;
-
-            // TODO: Check type
-            // TODO: Calculate and save offset
-            Add(new Sub(new IntegerConstant(4), Register.Esp));
+            var identifier = (Identifier) node.DirectDeclarator;
+            _currFrameOffset = _currFrameOffset - 4;
+            identifier.Symbol.StackOffset = _currFrameOffset;
         }
 
         private void Visit(InitializationDeclarator node)
@@ -174,11 +173,8 @@ namespace MyCCompiler.AST
                 throw new NotImplementedException();
             }
 
-            var constant = node.Expression as Constant;
-            var integer = Convert.ToInt32(constant.Text);
-
-            // TODO: Use offset
-            Add(new Mov(new IntegerConstant(integer), new Memory(Register.Esp, 0)));
+            var integer = Convert.ToInt32(((Constant)node.Expression).Text);
+            Add(new Mov(new IntegerConstant(integer), new Memory(Register.Esp, _currFrameOffset)));
         }
 
         private void Add(ILine line)
@@ -186,7 +182,7 @@ namespace MyCCompiler.AST
             _lines.AddLast(line);
         }
 
-        private IEnumerable<T> Reverse<T>(LinkedList<T> list)
+        private static IEnumerable<T> Reverse<T>(LinkedList<T> list)
         {
             var element = list.Last;
             while (element != null)

@@ -93,7 +93,7 @@
 
         public override string ToString()
         {
-            return $"pushl\t{Operand}";
+            return $"\tpushl\t{Operand}";
         }
     }
 
@@ -112,7 +112,7 @@
 
         public override string ToString()
         {
-            return $"{Instruction}\t{Source}, {Destination}";
+            return $"\t{Instruction}\t{Source}, {Destination}";
         }
     }
 
@@ -145,7 +145,7 @@
 
         public override string ToString()
         {
-            return $"call\t{Text}";
+            return $"\tcall\t{Text}";
         }
     }
 
@@ -191,7 +191,7 @@
     {
         public override string ToString()
         {
-            return "leave";
+            return "\tleave";
         }
     }
 
@@ -199,7 +199,7 @@
     {
         public override string ToString()
         {
-            return "ret";
+            return "\tret";
         }
     }
 

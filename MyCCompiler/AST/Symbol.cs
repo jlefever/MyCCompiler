@@ -2,6 +2,20 @@
 
 namespace MyCCompiler.AST
 {
+    public class Symbol
+    {
+        public string Name { get; }
+        public IType Type { get; }
+        public int StackOffset { get; set; }
+
+        public Symbol(string name, IType type)
+        {
+            Name = name;
+            Type = type;
+            StackOffset = 0;
+        }
+    }
+
     public interface IType { }
 
     public interface IPointable : IType { }

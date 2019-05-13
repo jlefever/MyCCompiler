@@ -5,20 +5,20 @@ namespace MyCCompiler.AST
     public class SymbolTable
     {
         public readonly SymbolTable Previous;
-        private readonly IDictionary<string, IType> _table;
+        private readonly IDictionary<string, Symbol> _table;
 
         public SymbolTable(SymbolTable previous)
         {
             Previous = previous;
-            _table = new Dictionary<string, IType>();
+            _table = new Dictionary<string, Symbol>();
         }
 
         public void Put(string text, IType type)
         {
-            _table.Add(text, type);
+            _table.Add(text, new Symbol(text, type));
         }
 
-        public IType Get(string text)
+        public Symbol Get(string text)
         {
             for (var st = this; st != null; st = st.Previous)
             {
@@ -30,5 +30,7 @@ namespace MyCCompiler.AST
 
             return null;
         }
+
+        public int Count => _table.Count;
     }
 }

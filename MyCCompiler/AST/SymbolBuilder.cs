@@ -40,6 +40,7 @@ namespace MyCCompiler.AST
             var declarationType = BuildDeclarationType(node.DeclarationSpecifiers);
             var functionType = BuildFunctionType(node.FunctionDeclarator, declarationType);
             Visit(node.CompoundStatement);
+            node.CompoundStatement.SymbolTable = _currSymbolTable;
             ExitScope();
             SetIdentifierType(node.FunctionDeclarator.Identifier, functionType);
         }
@@ -148,7 +149,7 @@ namespace MyCCompiler.AST
 
         public void Visit(Identifier node)
         {
-            node.Type = _currSymbolTable.Get(node.Text);
+            node.Symbol = _currSymbolTable.Get(node.Text);
         }
 
         public Function BuildFunctionType(FunctionDeclarator node, IPointable type)

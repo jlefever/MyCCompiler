@@ -66,7 +66,8 @@ namespace MyCCompiler.AST
 
     public class CompoundStatement : IStatement
     {
-        public LinkedList<IStatement> Statements;
+        public SymbolTable SymbolTable { get; set; }
+        public LinkedList<IStatement> Statements { get; }
 
         public CompoundStatement(LinkedList<IStatement> statements)
         {
@@ -98,7 +99,7 @@ namespace MyCCompiler.AST
 
     public class Identifier : IDirectDeclarator, IPrimaryExpression
     {
-        public IType Type { get; set; }
+        public Symbol Symbol { get; set; }
         public string Text { get; }
 
         public Identifier(string text)
