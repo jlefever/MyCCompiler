@@ -58,7 +58,6 @@ namespace MyCCompiler.AST
 
             // Reserve space on the stack for local variables
             var stackFrameSize = node.CompoundStatement.SymbolTable.Count * 4;
-            _currFrameOffset = stackFrameSize;
             Add(new Sub(new IntegerConstant(stackFrameSize), Register.Esp));
 
             // Setup GCC (optional)
@@ -135,7 +134,7 @@ namespace MyCCompiler.AST
         private void Visit(Identifier node)
         {
             var offset = node.Symbol.StackOffset;
-            Add(new Mov(new Memory(Register.Esp, offset), ResultRegister));
+            Add(new Mov(new Memory(Register.Ebp, offset), ResultRegister));
         }
 
         private void Visit(Constant node)
@@ -157,7 +156,7 @@ namespace MyCCompiler.AST
             Visit(node.Expression);
 
             var offset = node.Identifier.Symbol.StackOffset;
-            Add(new Mov(ResultRegister, new Memory(Register.Esp, offset)));
+            Add(new Mov(ResultRegister, new Memory(Register.Ebp, offset)));
         }
 
         private void Visit(BinaryExpression node)
@@ -280,27 +279,39 @@ namespace MyCCompiler.AST
         {
             if (!(node.DirectDeclarator is Identifier))
             {
-                // This should never be a FunctionDeclarator
+                // This should never be anything but an identifier
                 throw new NotSupportedException();
             }
 
-            var identifier = (Identifier) node.DirectDeclarator;
-            _currFrameOffset = _currFrameOffset - 4;
+            var identifier = (Identifier)node.DirectDeclarator;
             identifier.Symbol.StackOffset = _currFrameOffset;
+            _currFrameOffset = _currFrameOffset + 4;
         }
 
+        // This shares code with AssignmentExpression
         private void Visit(InitializationDeclarator node)
         {
+            // Calculate and store the offset
             Visit(node.Declarator);
 
-            if (!(node.Expression is Constant))
+            // Eval expression tree
+            Visit(node.Expression);
+
+            // This should never be anything but an identifier (for now)
+            // What about arrays or pointers?
+            if (!(node.Declarator.DirectDeclarator is Identifier))
             {
-                // TODO: Evaluate expression trees
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
-            var integer = Convert.ToInt32(((Constant)node.Expression).Text);
-            Add(new Mov(new IntegerConstant(integer), new Memory(Register.Esp, _currFrameOffset)));
+            // Special case??
+            if (node.Expression is Constant)
+            {
+                // var integer = Convert.ToInt32(((Constant)node.Expression).Text);
+            }
+
+            var offset = ((Identifier)node.Declarator.DirectDeclarator).Symbol.StackOffset;
+            Add(new Mov(ResultRegister, new Memory(Register.Ebp, offset)));
         }
 
         private void Add(ILine line)
