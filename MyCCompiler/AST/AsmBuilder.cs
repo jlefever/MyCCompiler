@@ -7,11 +7,13 @@ namespace MyCCompiler.AST
     {
         private readonly LinkedList<ILine> _lines;
         private int _currFrameOffset;
+        private int _asciiCount;
 
         public AsmBuilder()
         {
             _lines = new LinkedList<ILine>();
             _currFrameOffset = 0;
+            _asciiCount = 0;
         }
 
         public LinkedList<ILine> Visit(CompilationUnit node)
@@ -91,6 +93,16 @@ namespace MyCCompiler.AST
                     Visit(n.Expression);
                     break;
             }
+        }
+
+        private void Visit(IReturnStatement node)
+        {
+            if (node is ReturnVoidStatement)
+            {
+                return;
+            }
+
+            Visit(((ReturnStatement)node).Expression);
         }
 
         private void Visit(IExpression node)
@@ -235,20 +247,21 @@ namespace MyCCompiler.AST
         {
             var offset = node.Arguments.Count * 4;
 
+            // Are we supposed to be moving past the stack pointer?
             foreach (var expression in Reverse(node.Arguments))
             {
                 offset = offset - 4;
 
+                // This should probably be used to handle string literals in general
+                // Or maybe string literals should only be valid for function calls?
                 if (expression is StringLiteral literal)
                 {
-                    var text = literal.Text;
-
-                    // TODO: Fix this hacky garbage
-                    Add(new DirectText(".section .rdata,\"dr\""));
-                    Add(new Label("TheMagicString"));
-                    Add(new Ascii(text));
+                    Add(new DirectText(".section .rdata"));
+                    Add(new Label($"SL{_asciiCount}"));
+                    Add(new Ascii(literal.Text));
                     Add(new TextDirective());
-                    Add(new Mov(new TextConstant("TheMagicString"), new Memory(Register.Esp, offset)));
+                    Add(new Mov(new TextConstant($"SL{_asciiCount}"), new Memory(Register.Esp, offset)));
+                    _asciiCount++;
                     continue;
                 }
 
