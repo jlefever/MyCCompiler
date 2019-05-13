@@ -76,17 +76,17 @@ namespace MyCCompiler.AST
             Add(new And(new IntegerConstant(-16), Register.Esp));
 
             // Reserve space on the stack for local variables
-            var stackFrameSize = node.CompoundStatement.SymbolTable.Count * 4;
+            var stackFrameSize = node.CompoundStatement.SymbolTable.Count() * 4;
             Add(new Sub(new IntegerConstant(stackFrameSize), Register.Esp));
+
+            // Reset frame offset
+            _currFrameOffset = 0;
 
             // Setup GCC (optional)
             // list.AddLast(new Call("___main"));
 
             // Write body
-            foreach (var statement in node.CompoundStatement.Statements)
-            {
-                Visit(statement);
-            }
+            Visit(node.CompoundStatement);
 
             // Leave will move the value in EBP into ESP, deallocating any local variables
             // Leave also pops the old base pointer value off the stack
@@ -106,7 +106,8 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case CompoundStatement n:
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
                 case Declaration n:
                     Visit(n);
                     break;
@@ -124,6 +125,14 @@ namespace MyCCompiler.AST
             }
 
             Visit(((ReturnStatement)node).Expression);
+        }
+
+        private void Visit(CompoundStatement node)
+        {
+            foreach (var statement in node.Statements)
+            {
+                Visit(statement);
+            }
         }
 
         private void Visit(IExpression node)

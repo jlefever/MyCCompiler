@@ -10,7 +10,7 @@ namespace MyCCompiler.AST
 
         public SymbolBuilder()
         {
-            _currSymbolTable = new SymbolTable(null);
+            _currSymbolTable = new SymbolTable();
         }
 
         public void Visit(CompilationUnit node)
@@ -40,13 +40,14 @@ namespace MyCCompiler.AST
             var declarationType = BuildDeclarationType(node.DeclarationSpecifiers);
             var functionType = BuildFunctionType(node.FunctionDeclarator, declarationType);
             Visit(node.CompoundStatement);
-            node.CompoundStatement.SymbolTable = _currSymbolTable;
             ExitScope();
             SetIdentifierType(node.FunctionDeclarator.Identifier, functionType);
         }
 
         public void Visit(CompoundStatement node)
         {
+            node.SymbolTable = _currSymbolTable;
+
             foreach (var statement in node.Statements)
             {
                 Visit(statement);
@@ -275,7 +276,7 @@ namespace MyCCompiler.AST
 
         private void ExitScope()
         {
-            _currSymbolTable = _currSymbolTable.Previous;
+            _currSymbolTable = _currSymbolTable.Parent;
         }
 
         private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap =

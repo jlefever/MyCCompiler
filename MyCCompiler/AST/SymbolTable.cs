@@ -4,33 +4,74 @@ namespace MyCCompiler.AST
 {
     public class SymbolTable
     {
-        public readonly SymbolTable Previous;
+        public SymbolTable Parent { get; }
+        private readonly LinkedList<SymbolTable> _children;
         private readonly IDictionary<string, Symbol> _table;
 
-        public SymbolTable(SymbolTable previous)
+        /// <summary>
+        /// Create a root SymbolTable
+        /// </summary>
+        public SymbolTable()
         {
-            Previous = previous;
+            _children = new LinkedList<SymbolTable>();
             _table = new Dictionary<string, Symbol>();
         }
 
-        public void Put(string text, IType type)
+        /// <summary>
+        /// Create a child SymbolTable
+        /// </summary>
+        /// <param name="parent">The parent SymbolTable</param>
+        public SymbolTable(SymbolTable parent)
         {
-            _table.Add(text, new Symbol(text, type));
+            _children = new LinkedList<SymbolTable>();
+            _table = new Dictionary<string, Symbol>();
+            Parent = parent;
+            Parent._children.AddLast(this);
         }
 
-        public Symbol Get(string text)
+        /// <summary>
+        /// Adds a symbol to the SymbolTable
+        /// </summary>
+        /// <param name="name">The name of the symbol</param>
+        /// <param name="type">Tye type of the symbol</param>
+        public void Put(string name, IType type)
         {
-            for (var st = this; st != null; st = st.Previous)
+            _table.Add(name, new Symbol(name, type));
+        }
+
+        /// <summary>
+        /// Looks through this SymbolTable and all parents for a
+        /// Symbol with the given name
+        /// </summary>
+        /// <param name="name">The name of a symbol</param>
+        /// <returns>Symbol with the given name</returns>
+        public Symbol Get(string name)
+        {
+            for (var st = this; st != null; st = st.Parent)
             {
-                if (st._table.ContainsKey(text))
+                if (st._table.ContainsKey(name))
                 {
-                    return st._table[text];
+                    return st._table[name];
                 }
             }
 
             return null;
         }
 
-        public int Count => _table.Count;
+        /// <summary>
+        /// Counts the number of symbols in this subtree of the SymbolTable
+        /// </summary>
+        /// <returns>The total symbols in this subtree</returns>
+        public int Count()
+        {
+            var count = _table.Count;
+
+            foreach (var child in _children)
+            {
+                count = count + child.Count();
+            }
+
+            return count;
+        }
     }
 }
