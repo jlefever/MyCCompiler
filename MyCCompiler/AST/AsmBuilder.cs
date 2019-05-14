@@ -86,9 +86,9 @@ namespace MyCCompiler.AST
             _currFrameOffset = 0;
 
             // Setup GCC (optional)
-            Add(new Call("___main"));
+            Add(new Call(new LabeledCode("___main")));
 
-            // Write body
+            // Visit body
             Visit(node.CompoundStatement);
 
             // Leave will move the value in EBP into ESP, deallocating any local variables
@@ -280,22 +280,22 @@ namespace MyCCompiler.AST
             switch (node.Operator)
             {
                 case BinaryOpKind.EqualTo:
-                    Add(new Sete(Register.Al));
+                    Add(new Sete(LowerResultRegister));
                     return;
                 case BinaryOpKind.NotEqualTo:
-                    Add(new Sete(Register.Al));
+                    Add(new Sete(LowerResultRegister));
                     return;
                 case BinaryOpKind.LessThan:
-                    Add(new Setl(Register.Al));
+                    Add(new Setl(LowerResultRegister));
                     return;
                 case BinaryOpKind.GreaterThan:
-                    Add(new Setg(Register.Al));
+                    Add(new Setg(LowerResultRegister));
                     return;
                 case BinaryOpKind.LessThanOrEqualTo:
-                    Add(new Setle(Register.Al));
+                    Add(new Setle(LowerResultRegister));
                     return;
                 case BinaryOpKind.GreaterThanOrEqualTo:
-                    Add(new Setge(Register.Al));
+                    Add(new Setge(LowerResultRegister));
                     return;
             }
         }
@@ -320,10 +320,10 @@ namespace MyCCompiler.AST
             switch (node.Operator)
             {
                 case BinaryOpKind.LShift:
-                    Add(new Shl(Register.Cl, ResultRegister));
+                    Add(new Shl(LowerAltRegister, ResultRegister));
                     break;
                 case BinaryOpKind.RShift:
-                    Add(new Shr(Register.Cl, ResultRegister));
+                    Add(new Shr(LowerAltRegister, ResultRegister));
                     break;
             }
         }
@@ -349,7 +349,7 @@ namespace MyCCompiler.AST
             Add(new Mov(new IntegerConstant(0), Register.Edx));
 
             // Do EDX:EAX / ECX and put the quotient in EAX and remainder in EDX
-            Add(new Idiv(AltRegister));
+            Add(new Idiv(Register.Ecx));
 
             // If the operator is modulus, move the remainder into the result register
             if (node.Operator == BinaryOpKind.Modulus)
@@ -400,7 +400,7 @@ namespace MyCCompiler.AST
             Add(new Mov(new IntegerConstant(0), ResultRegister));
 
             // Set the low byte of EAX to 1 if the right tree is not 0
-            Add(new Setne(Register.Al));
+            Add(new Setne(LowerResultRegister));
 
             // Add the final label
             Add(new Label(finalLabel));
@@ -436,7 +436,7 @@ namespace MyCCompiler.AST
             }
 
             // Call function
-            Add(new Call("_" + node.Identifier.Text));
+            Add(new Call(new LabeledCode("_" + node.Identifier.Text)));
 
             // Remove arguments from stack
             Add(new Add(new IntegerConstant(node.Arguments.Count * 4), Register.Esp));
@@ -515,7 +515,9 @@ namespace MyCCompiler.AST
         }
 
         private static readonly Register ResultRegister = Register.Eax;
+        private static readonly Register LowerResultRegister = Register.Al;
         private static readonly Register AltRegister = Register.Ecx;
+        private static readonly Register LowerAltRegister = Register.Cl;
         private static readonly Register[] CallerSaved = { Register.Eax, Register.Ecx, Register.Edx };
         private static readonly Register[] CalleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
     }

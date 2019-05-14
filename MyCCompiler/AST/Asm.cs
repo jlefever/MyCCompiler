@@ -186,6 +186,11 @@
         public Jne(LabeledCode destination) : base("jne", destination) { }
     }
 
+    public class Call : UnaryInstruction
+    {
+        public Call(LabeledCode destination) : base("call", destination) { }
+    }
+
     public abstract class BinaryInstruction : ILine
     {
         public string Instruction { get; }
@@ -263,21 +268,6 @@
     {
         public Shr(IOperand source, IWritableOperand destination)
             : base("shr", source, destination) { }
-    }
-
-    public class Call : ILine
-    {
-        public string Text { get; }
-
-        public Call(string text)
-        {
-            Text = text;
-        }
-
-        public override string ToString()
-        {
-            return $"\tcall\t{Text}";
-        }
     }
 
     public class Leave : ILine
