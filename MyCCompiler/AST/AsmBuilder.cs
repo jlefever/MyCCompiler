@@ -38,7 +38,9 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case Declaration n:
-                    throw new NotImplementedException();
+                    // Not supporting global variables or function signitures at the moment.
+                    // This would not be unreasonable to add later.
+                    throw new NotSupportedException();
             }
         }
 
@@ -84,7 +86,7 @@ namespace MyCCompiler.AST
             _currFrameOffset = 0;
 
             // Setup GCC (optional)
-            // list.AddLast(new Call("___main"));
+            Add(new Call("___main"));
 
             // Write body
             Visit(node.CompoundStatement);
@@ -190,11 +192,11 @@ namespace MyCCompiler.AST
         {
             var label = $"SL{_stringLiteralCount++}";
 
-            Add(new DirectText(".section .rdata"));
+            Add(new RDataDirective());
             Add(new Label(label));
-            Add(new Ascii(node.Text));
+            Add(new AsciiDirective(node.Text));
             Add(new TextDirective());
-            Add(new Mov(new TextConstant(label), ResultRegister));
+            Add(new Mov(new LabeledData(label), ResultRegister));
         }
 
         private void Visit(AssignmentExpression node)
@@ -226,6 +228,10 @@ namespace MyCCompiler.AST
                 case BinaryOpKind.RShift:
                     VisitLShiftOrRShift(node);
                     return;
+                case BinaryOpKind.Or:
+                case BinaryOpKind.And:
+                    VisitLogicalAndOr(node);
+                    return;
             }
 
             // Evalate the left tree and put result in ResultRegister
@@ -244,61 +250,53 @@ namespace MyCCompiler.AST
             {
                 case BinaryOpKind.Comma:
                     // Do nothing. ResultRegister already contains the result.
-                    break;
-                case BinaryOpKind.Or:
-                    // TODO: Implement with short-circuiting
-                    break;
-                case BinaryOpKind.And:
-                    // TODO: Implement with short-circuiting
-                    break;
+                    return;
                 case BinaryOpKind.BitwiseOr:
                     Add(new Or(AltRegister, ResultRegister));
-                    break;
+                    return;
                 case BinaryOpKind.BitwiseXor:
                     Add(new Xor(AltRegister, ResultRegister));
-                    break;
+                    return;
                 case BinaryOpKind.BitwiseAnd:
                     Add(new And(AltRegister, ResultRegister));
-                    break;
-                case BinaryOpKind.EqualTo:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Sete(Register.Al));
-                    break;
-                case BinaryOpKind.NotEqualTo:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Sete(Register.Al));
-                    break;
-                case BinaryOpKind.LessThan:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Setl(Register.Al));
-                    break;
-                case BinaryOpKind.GreaterThan:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Setg(Register.Al));
-                    break;
-                case BinaryOpKind.LessThanOrEqualTo:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Setle(Register.Al));
-                    break;
-                case BinaryOpKind.GreaterThanOrEqualTo:
-                    Add(new Cmp(AltRegister, ResultRegister));
-                    Add(new Mov(new IntegerConstant(0), ResultRegister));
-                    Add(new Setge(Register.Al));
-                    break;
+                    return;
                 case BinaryOpKind.Addition:
                     Add(new Add(AltRegister, ResultRegister));
-                    break;
+                    return;
                 case BinaryOpKind.Subtraction:
                     Add(new Sub(AltRegister, ResultRegister));
-                    break;
+                    return;
                 case BinaryOpKind.Multiplication:
                     Add(new Imul(AltRegister, ResultRegister));
-                    break;
+                    return;
+            }
+
+            // Compare left tree with right tree
+            Add(new Cmp(AltRegister, ResultRegister));
+
+            // Zero out EAX, so AL can be used safely
+            Add(new Mov(new IntegerConstant(0), ResultRegister));
+
+            switch (node.Operator)
+            {
+                case BinaryOpKind.EqualTo:
+                    Add(new Sete(Register.Al));
+                    return;
+                case BinaryOpKind.NotEqualTo:
+                    Add(new Sete(Register.Al));
+                    return;
+                case BinaryOpKind.LessThan:
+                    Add(new Setl(Register.Al));
+                    return;
+                case BinaryOpKind.GreaterThan:
+                    Add(new Setg(Register.Al));
+                    return;
+                case BinaryOpKind.LessThanOrEqualTo:
+                    Add(new Setle(Register.Al));
+                    return;
+                case BinaryOpKind.GreaterThanOrEqualTo:
+                    Add(new Setge(Register.Al));
+                    return;
             }
         }
 
@@ -358,6 +356,54 @@ namespace MyCCompiler.AST
             {
                 Add(new Mov(Register.Edx, ResultRegister));
             }
+        }
+
+        private void VisitLogicalAndOr(BinaryExpression node)
+        {
+            var rightLabel = $"L{_labelCount++}";
+            var finalLabel = $"L{_labelCount++}";
+
+            // Evalate the left tree and put result in ResultRegister
+            Visit(node.Left);
+
+            // Check if the left tree is true
+            Add(new Cmp(new IntegerConstant(0), ResultRegister));
+
+            if (node.Operator == BinaryOpKind.Or)
+            {
+                // The left tree was 0, so we have to evaluate the right tree
+                Add(new Je(new LabeledCode(rightLabel)));
+
+                // We didn't jump, so the left tree is true and we can return true
+                Add(new Mov(new IntegerConstant(1), ResultRegister));
+                Add(new Jmp(new LabeledCode(finalLabel)));
+            }
+            else
+            {
+                // The left tree was 0, so we have to evaluate the right tree
+                Add(new Jne(new LabeledCode(rightLabel)));
+
+                // We didn't jump, so the left tree is false and we can return false
+                Add(new Jmp(new LabeledCode(finalLabel)));
+            }
+
+            // Generate code for evaluating the right tree
+            Add(new Label(rightLabel));
+
+            // Evalate the right tree and put result in ResultRegister
+            Visit(node.Right);
+
+            // Check if the right tree is true
+            Add(new Cmp(new IntegerConstant(0), ResultRegister));
+
+            // Zero out EAX
+            Add(new Mov(new IntegerConstant(0), ResultRegister));
+
+            // Set the low byte of EAX to 1 if the right tree is not 0
+            Add(new Setne(Register.Al));
+
+            // Add the final label
+            Add(new Label(finalLabel));
         }
 
         private void Visit(UnaryExpression node)

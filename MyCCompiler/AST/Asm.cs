@@ -77,11 +77,11 @@
         }
     }
 
-    public class TextConstant : IOperand
+    public class LabeledData : IOperand
     {
         public string Text { get; }
 
-        public TextConstant(string text)
+        public LabeledData(string text)
         {
             Text = text;
         }
@@ -89,6 +89,21 @@
         public override string ToString()
         {
             return "$" + Text;
+        }
+    }
+
+    public class LabeledCode : IOperand
+    {
+        public string Text { get; }
+
+        public LabeledCode(string text)
+        {
+            Text = text;
+        }
+
+        public override string ToString()
+        {
+            return Text;
         }
     }
 
@@ -158,17 +173,17 @@
 
     public class Jmp : UnaryInstruction
     {
-        public Jmp(TextConstant destination) : base("jmp", destination) { }
+        public Jmp(LabeledCode destination) : base("jmp", destination) { }
     }
 
     public class Je : UnaryInstruction
     {
-        public Je(TextConstant destination) : base("je", destination) { }
+        public Je(LabeledCode destination) : base("je", destination) { }
     }
 
     public class Jne : UnaryInstruction
     {
-        public Jne(TextConstant destination) : base("jne", destination) { }
+        public Jne(LabeledCode destination) : base("jne", destination) { }
     }
 
     public abstract class BinaryInstruction : ILine
@@ -265,6 +280,37 @@
         }
     }
 
+    public class Leave : ILine
+    {
+        public override string ToString()
+        {
+            return "\tleave";
+        }
+    }
+
+    public class Ret : ILine
+    {
+        public override string ToString()
+        {
+            return "\tret";
+        }
+    }
+
+    public class Label : ILine
+    {
+        public string Text { get; }
+
+        public Label(string text)
+        {
+            Text = text;
+        }
+
+        public override string ToString()
+        {
+            return $"{Text}:";
+        }
+    }
+
     public class GloblDirective : ILine
     {
         public string Text { get; }
@@ -288,42 +334,19 @@
         }
     }
 
-    public class Label : ILine
+    public class RDataDirective : ILine
+    {
+        public override string ToString()
+        {
+            return ".section .rdata";
+        }
+    }
+
+    public class AsciiDirective : ILine
     {
         public string Text { get; }
 
-        public Label(string text)
-        {
-            Text = text;
-        }
-
-        public override string ToString()
-        {
-            return $"{Text}:";
-        }
-    }
-
-    public class Leave : ILine
-    {
-        public override string ToString()
-        {
-            return "\tleave";
-        }
-    }
-
-    public class Ret : ILine
-    {
-        public override string ToString()
-        {
-            return "\tret";
-        }
-    }
-
-    public class Ascii : ILine
-    {
-        public string Text { get; }
-
-        public Ascii(string text)
+        public AsciiDirective(string text)
         {
             // TODO: Do this somewhere else
             Text = text.Substring(1, text.Length - 2);
@@ -332,22 +355,6 @@
         public override string ToString()
         {
             return $".ascii \"{Text}\\0\"";
-        }
-    }
-
-    // Don't use this
-    public class DirectText : ILine
-    {
-        public string Line { get; }
-
-        public DirectText(string line)
-        {
-            Line = line;
-        }
-
-        public override string ToString()
-        {
-            return Line;
         }
     }
 }
