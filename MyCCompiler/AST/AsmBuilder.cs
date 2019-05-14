@@ -209,16 +209,26 @@ namespace MyCCompiler.AST
         {
             if (node.AssignmentKind != AssignmentKind.Assign)
             {
-                // TODO: Different kind of assignments
-                throw new NotImplementedException();
+                // Different kind of assignments currently not supported
+                throw new NotSupportedException();
             }
 
-            // Evaluate the RHS expression first
-            // Result will be in ResultRegister
-            Visit(node.Expression);
+            VisitAssign(node.Identifier.Symbol, node.Expression);
+        }
 
-            var offset = node.Identifier.Symbol.StackOffset;
-            Add(new Mov(ResultRegister, new Memory(Register.Ebp, offset)));
+        private void VisitAssign(Symbol symbol, IExpression expression)
+        {
+            // Special case if the expression is a constant
+            if (expression is Constant constant)
+            {
+                var integer = Convert.ToInt32(constant.Text);
+                Add(new Mov(new IntegerConstant(integer), new Memory(Register.Ebp, symbol.StackOffset)));
+            }
+            else
+            {
+                Visit(expression);
+                Add(new Mov(ResultRegister, new Memory(Register.Ebp, symbol.StackOffset)));
+            }
         }
 
         private void Visit(BinaryExpression node)
@@ -496,14 +506,10 @@ namespace MyCCompiler.AST
             identifier.Symbol.StackOffset = _currFrameOffset;
         }
 
-        // This shares code with AssignmentExpression
         private void Visit(InitializationDeclarator node)
         {
             // Calculate and store the offset
             Visit(node.Declarator);
-
-            // Eval expression tree
-            Visit(node.Expression);
 
             // This should never be anything but an identifier (for now)
             // What about arrays or pointers?
@@ -512,14 +518,8 @@ namespace MyCCompiler.AST
                 throw new NotSupportedException();
             }
 
-            // Special case??
-            if (node.Expression is Constant)
-            {
-                // var integer = Convert.ToInt32(((Constant)node.Expression).Text);
-            }
-
-            var offset = ((Identifier)node.Declarator.DirectDeclarator).Symbol.StackOffset;
-            Add(new Mov(ResultRegister, new Memory(Register.Ebp, offset)));
+            var symbol = ((Identifier) node.Declarator.DirectDeclarator).Symbol;
+            VisitAssign(symbol, node.Expression);
         }
 
         private void Add(ILine line)
