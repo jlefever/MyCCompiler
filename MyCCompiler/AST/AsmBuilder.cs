@@ -7,15 +7,13 @@ namespace MyCCompiler.AST
     {
         private readonly LinkedList<ILine> _lines;
         private int _currFrameOffset;
-        private int _stringLiteralCount;
-        private int _labelCount;
+        private int _currLabelNumber;
 
         public AsmBuilder()
         {
             _lines = new LinkedList<ILine>();
             _currFrameOffset = 0;
-            _stringLiteralCount = 0;
-            _labelCount = 0;
+            _currLabelNumber = 0;
         }
 
         public LinkedList<ILine> Visit(CompilationUnit node)
@@ -110,7 +108,8 @@ namespace MyCCompiler.AST
             switch (node)
             {
                 case IIfStatement n:
-                    throw new NotImplementedException();
+                    Visit(n);
+                    break;
                 case IReturnStatement n:
                     Visit(n);
                     break;
@@ -124,6 +123,65 @@ namespace MyCCompiler.AST
                     Visit(n.Expression);
                     break;
             }
+        }
+
+        private void Visit(IIfStatement node)
+        {
+            switch (node)
+            {
+                case IfStatement n:
+                    Visit(n);
+                    break;
+                case IfElseStatement n:
+                    Visit(n);
+                    break;
+            }
+        }
+
+        private void Visit(IfStatement node)
+        {
+            var endLabel = GetNextLabel();
+
+            // Evaluate expression and put result in ResultRegister
+            Visit(node.Expression);
+
+            // Compare result with 1 so result is in the EFLAGS register
+            Add(new Cmp(new IntegerConstant(1), ResultRegister));
+
+            // Jump to end label if condition is not satisfied
+            Add(new Jne(new LabeledCode(endLabel)));
+
+            // Evaluate body
+            Visit(node.Body);
+
+            // Print end label
+            Add(new Label(endLabel));
+        }
+
+        private void Visit(IfElseStatement node)
+        {
+            var elseLabel = GetNextLabel();
+            var endLabel = GetNextLabel();
+
+            // Evaluate expression and put result in ResultRegister
+            Visit(node.Expression);
+
+            // Compare result with 1 so result is in the EFLAGS register
+            Add(new Cmp(new IntegerConstant(1), ResultRegister));
+
+            // Jump to else code if condition is not satisfied
+            Add(new Jne(new LabeledCode(elseLabel)));
+
+            // Evaluate body and jump to end
+            Visit(node.Body);
+            Add(new Jmp(new LabeledCode(endLabel)));
+
+            // Print else label and evaluate else body
+            Add(new Label(elseLabel));
+            Visit(node.Else);
+
+            // Print end label
+            Add(new Label(endLabel));
         }
 
         private void Visit(IReturnStatement node)
@@ -196,7 +254,7 @@ namespace MyCCompiler.AST
 
         private void Visit(StringLiteral node)
         {
-            var label = $"SL{_stringLiteralCount++}";
+            var label = GetNextLabel();
 
             Add(new RDataDirective());
             Add(new Label(label));
@@ -377,8 +435,8 @@ namespace MyCCompiler.AST
 
         private void VisitLogicalAndOr(BinaryExpression node)
         {
-            var rightLabel = $"L{_labelCount++}";
-            var finalLabel = $"L{_labelCount++}";
+            var rightLabel = GetNextLabel();
+            var finalLabel = GetNextLabel();
 
             // Evalate the left tree and put result in ResultRegister
             Visit(node.Left);
@@ -518,13 +576,18 @@ namespace MyCCompiler.AST
                 throw new NotSupportedException();
             }
 
-            var symbol = ((Identifier) node.Declarator.DirectDeclarator).Symbol;
+            var symbol = ((Identifier)node.Declarator.DirectDeclarator).Symbol;
             VisitAssign(symbol, node.Expression);
         }
 
         private void Add(ILine line)
         {
             _lines.AddLast(line);
+        }
+
+        private string GetNextLabel()
+        {
+            return $"L{_currLabelNumber++}";
         }
 
         private static IEnumerable<T> Reverse<T>(LinkedList<T> list)
