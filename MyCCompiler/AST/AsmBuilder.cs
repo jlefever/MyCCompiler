@@ -7,18 +7,19 @@ namespace MyCCompiler.AST
     {
         private readonly LinkedList<ILine> _lines;
         private int _currFrameOffset;
-        private int _asciiCount;
+        private int _stringLiteralCount;
+        private int _labelCount;
 
         public AsmBuilder()
         {
             _lines = new LinkedList<ILine>();
             _currFrameOffset = 0;
-            _asciiCount = 0;
+            _stringLiteralCount = 0;
+            _labelCount = 0;
         }
 
         public LinkedList<ILine> Visit(CompilationUnit node)
         {
-            // Not sure if this should go here
             Add(new TextDirective());
 
             foreach (var external in node.Externals)
@@ -37,7 +38,7 @@ namespace MyCCompiler.AST
                     Visit(n);
                     break;
                 case Declaration n:
-                    break;
+                    throw new NotImplementedException();
             }
         }
 
@@ -187,8 +188,7 @@ namespace MyCCompiler.AST
 
         private void Visit(StringLiteral node)
         {
-            var label = $"SL{_asciiCount}";
-            _asciiCount++;
+            var label = $"SL{_stringLiteralCount++}";
 
             Add(new DirectText(".section .rdata"));
             Add(new Label(label));
@@ -215,6 +215,19 @@ namespace MyCCompiler.AST
 
         private void Visit(BinaryExpression node)
         {
+            // Some binary expressions require special handling
+            switch (node.Operator)
+            {
+                case BinaryOpKind.Division:
+                case BinaryOpKind.Modulus:
+                    VisitDivisionOrModulus(node);
+                    return;
+                case BinaryOpKind.LShift:
+                case BinaryOpKind.RShift:
+                    VisitLShiftOrRShift(node);
+                    return;
+            }
+
             // Evalate the left tree and put result in ResultRegister
             Visit(node.Left);
 
@@ -230,32 +243,52 @@ namespace MyCCompiler.AST
             switch (node.Operator)
             {
                 case BinaryOpKind.Comma:
+                    // Do nothing. ResultRegister already contains the result.
                     break;
                 case BinaryOpKind.Or:
+                    // TODO: Implement with short-circuiting
                     break;
                 case BinaryOpKind.And:
+                    // TODO: Implement with short-circuiting
                     break;
                 case BinaryOpKind.BitwiseOr:
+                    Add(new Or(AltRegister, ResultRegister));
                     break;
                 case BinaryOpKind.BitwiseXor:
+                    Add(new Xor(AltRegister, ResultRegister));
                     break;
                 case BinaryOpKind.BitwiseAnd:
+                    Add(new And(AltRegister, ResultRegister));
                     break;
                 case BinaryOpKind.EqualTo:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Sete(Register.Al));
                     break;
                 case BinaryOpKind.NotEqualTo:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Sete(Register.Al));
                     break;
                 case BinaryOpKind.LessThan:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Setl(Register.Al));
                     break;
                 case BinaryOpKind.GreaterThan:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Setg(Register.Al));
                     break;
                 case BinaryOpKind.LessThanOrEqualTo:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Setle(Register.Al));
                     break;
                 case BinaryOpKind.GreaterThanOrEqualTo:
-                    break;
-                case BinaryOpKind.LShift:
-                    break;
-                case BinaryOpKind.RShift:
+                    Add(new Cmp(AltRegister, ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Setge(Register.Al));
                     break;
                 case BinaryOpKind.Addition:
                     Add(new Add(AltRegister, ResultRegister));
@@ -266,10 +299,64 @@ namespace MyCCompiler.AST
                 case BinaryOpKind.Multiplication:
                     Add(new Imul(AltRegister, ResultRegister));
                     break;
-                case BinaryOpKind.Division:
+            }
+        }
+
+        private void VisitLShiftOrRShift(BinaryExpression node)
+        {
+            // Evalate the left tree and put result in ResultRegister
+            Visit(node.Left);
+
+            // Push the result of the left tree onto the stack
+            Add(new Push(ResultRegister));
+
+            // Evalate the right tree and put result in ResultRegister
+            Visit(node.Right);
+
+            // Move right result, ResultRegister, to AltRegister
+            Add(new Mov(ResultRegister, AltRegister));
+
+            // Pop the left result into ResultRegister
+            Add(new Pop(ResultRegister));
+
+            switch (node.Operator)
+            {
+                case BinaryOpKind.LShift:
+                    Add(new Shl(Register.Cl, ResultRegister));
                     break;
-                case BinaryOpKind.Modulus:
+                case BinaryOpKind.RShift:
+                    Add(new Shr(Register.Cl, ResultRegister));
                     break;
+            }
+        }
+
+        private void VisitDivisionOrModulus(BinaryExpression node)
+        {
+            // Evalate the left tree and put result in ResultRegister
+            Visit(node.Left);
+
+            // Push the result of the left tree onto the stack
+            Add(new Push(ResultRegister));
+
+            // Evalate the right tree and put result in ResultRegister
+            Visit(node.Right);
+
+            // Move right result, ResultRegister, to AltRegister
+            Add(new Mov(ResultRegister, AltRegister));
+
+            // Pop the left result into ResultRegister
+            Add(new Pop(ResultRegister));
+
+            // Zero out EDX
+            Add(new Mov(new IntegerConstant(0), Register.Edx));
+
+            // Do EDX:EAX / ECX and put the quotient in EAX and remainder in EDX
+            Add(new Idiv(AltRegister));
+
+            // If the operator is modulus, move the remainder into the result register
+            if (node.Operator == BinaryOpKind.Modulus)
+            {
+                Add(new Mov(Register.Edx, ResultRegister));
             }
         }
 
@@ -382,7 +469,7 @@ namespace MyCCompiler.AST
         }
 
         private static readonly Register ResultRegister = Register.Eax;
-        private static readonly Register AltRegister = Register.Edx;
+        private static readonly Register AltRegister = Register.Ecx;
         private static readonly Register[] CallerSaved = { Register.Eax, Register.Ecx, Register.Edx };
         private static readonly Register[] CalleeSaved = { Register.Ebx, Register.Edi, Register.Esi };
     }

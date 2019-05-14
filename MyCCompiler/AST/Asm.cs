@@ -14,6 +14,18 @@
         public static Register Edi = new Register("edi");
         public static Register Esp = new Register("esp");
         public static Register Ebp = new Register("ebp");
+        public static Register Ax = new Register("ax");
+        public static Register Bx = new Register("bx");
+        public static Register Cx = new Register("cx");
+        public static Register Dx = new Register("dx");
+        public static Register Ah = new Register("ah");
+        public static Register Bh = new Register("bh");
+        public static Register Ch = new Register("ch");
+        public static Register Dh = new Register("dh");
+        public static Register Al = new Register("al");
+        public static Register Bl = new Register("bl");
+        public static Register Cl = new Register("cl");
+        public static Register Dl = new Register("dl");
 
         public string Name { get; }
 
@@ -109,6 +121,56 @@
         public Pop(IOperand destination) : base("pop", destination) { }
     }
 
+    public class Idiv : UnaryInstruction
+    {
+        public Idiv(IOperand destination) : base("idiv", destination) { }
+    }
+
+    public class Sete : UnaryInstruction
+    {
+        public Sete(IOperand destination) : base("sete", destination) { }
+    }
+
+    public class Setne : UnaryInstruction
+    {
+        public Setne(IOperand destination) : base("setne", destination) { }
+    }
+
+    public class Setg : UnaryInstruction
+    {
+        public Setg(IOperand destination) : base("setg", destination) { }
+    }
+
+    public class Setge : UnaryInstruction
+    {
+        public Setge(IOperand destination) : base("setge", destination) { }
+    }
+
+    public class Setl : UnaryInstruction
+    {
+        public Setl(IOperand destination) : base("setl", destination) { }
+    }
+
+    public class Setle : UnaryInstruction
+    {
+        public Setle(IOperand destination) : base("setle", destination) { }
+    }
+
+    public class Jmp : UnaryInstruction
+    {
+        public Jmp(TextConstant destination) : base("jmp", destination) { }
+    }
+
+    public class Je : UnaryInstruction
+    {
+        public Je(TextConstant destination) : base("je", destination) { }
+    }
+
+    public class Jne : UnaryInstruction
+    {
+        public Jne(TextConstant destination) : base("jne", destination) { }
+    }
+
     public abstract class BinaryInstruction : ILine
     {
         public string Instruction { get; }
@@ -140,6 +202,18 @@
             : base("andl", source, destination) { }
     }
 
+    public class Or : BinaryInstruction
+    {
+        public Or(IOperand source, IWritableOperand destination)
+            : base("orl", source, destination) { }
+    }
+
+    public class Xor : BinaryInstruction
+    {
+        public Xor(IOperand source, IWritableOperand destination)
+            : base("xorl", source, destination) { }
+    }
+
     public class Sub : BinaryInstruction
     {
         public Sub(IOperand source, IWritableOperand destination)
@@ -156,6 +230,24 @@
     {
         public Imul(IOperand source, IWritableOperand destination)
             : base("imull", source, destination) { }
+    }
+
+    public class Cmp : BinaryInstruction
+    {
+        public Cmp(IOperand source, IWritableOperand destination)
+            : base("cmpl", source, destination) { }
+    }
+
+    public class Shl : BinaryInstruction
+    {
+        public Shl(IOperand source, IWritableOperand destination)
+            : base("shl", source, destination) { }
+    }
+
+    public class Shr : BinaryInstruction
+    {
+        public Shr(IOperand source, IWritableOperand destination)
+            : base("shr", source, destination) { }
     }
 
     public class Call : ILine
