@@ -282,6 +282,12 @@ namespace MyCCompiler.AST
             : base("shr", source, destination) { }
     }
 
+    public class Lea : BinaryInstruction
+    {
+        public Lea(IOperand source, IWritableOperand destination)
+            : base("leal", source, destination) { }
+    }
+
     public class Leave : ILine
     {
         public override string ToString()

@@ -489,8 +489,17 @@ namespace MyCCompiler.AST
             switch (node.Operator)
             {
                 case UnaryOpKind.AddressOf:
+                    // We only support getting the address of an identifier
+                    if (!(node.Expression is Identifier))
+                    {
+                        throw new NotSupportedException();
+                    }
+
+                    var offset = ((Identifier) node.Expression).Symbol.StackOffset;
+                    Add(new Lea(new Memory(Register.Ebp, offset), ResultRegister));
                     break;
                 case UnaryOpKind.Dereference:
+                    Add(new Mov(new Memory(ResultRegister, 0), ResultRegister));
                     break;
                 case UnaryOpKind.Plus:
                     // No need for integer promotion as everything is already integers
