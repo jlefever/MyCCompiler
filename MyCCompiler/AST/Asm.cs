@@ -1,4 +1,6 @@
-﻿namespace MyCCompiler.AST
+﻿using System.Resources;
+
+namespace MyCCompiler.AST
 {
     public interface IOperand { }
 
@@ -189,6 +191,16 @@
     public class Call : UnaryInstruction
     {
         public Call(LabeledCode destination) : base("call", destination) { }
+    }
+
+    public class Neg : UnaryInstruction
+    {
+        public Neg(IWritableOperand destination) : base("negl", destination) { }
+    }
+
+    public class Not : UnaryInstruction
+    {
+        public Not(IWritableOperand destination) : base("notl", destination) { }
     }
 
     public abstract class BinaryInstruction : ILine

@@ -277,6 +277,7 @@ namespace MyCCompiler.AST
                     return;
             }
 
+            // Only binary comparators are remaining
             // Compare left tree with right tree
             Add(new Cmp(AltRegister, ResultRegister));
 
@@ -420,6 +421,22 @@ namespace MyCCompiler.AST
             switch (node.Operator)
             {
                 case UnaryOpKind.AddressOf:
+                    break;
+                case UnaryOpKind.Dereference:
+                    break;
+                case UnaryOpKind.Plus:
+                    // No need for integer promotion as everything is already integers
+                    break;
+                case UnaryOpKind.Minus:
+                    Add(new Neg(ResultRegister));
+                    break;
+                case UnaryOpKind.BitwiseNot:
+                    Add(new Not(ResultRegister));
+                    break;
+                case UnaryOpKind.Not:
+                    Add(new Cmp(new IntegerConstant(0), ResultRegister));
+                    Add(new Mov(new IntegerConstant(0), ResultRegister));
+                    Add(new Sete(LowerResultRegister));
                     break;
             }
         }
