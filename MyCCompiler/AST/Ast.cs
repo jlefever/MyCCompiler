@@ -44,6 +44,8 @@ namespace MyCCompiler.AST
         public FunctionDeclarator FunctionDeclarator { get; }
         public CompoundStatement CompoundStatement { get; }
 
+        public bool IsMain => FunctionDeclarator.Identifier.Text == "main";
+
         public FunctionDefinition(DeclarationSpecifiers declarationSpecifiers, FunctionDeclarator functionDeclarator, CompoundStatement compoundStatement)
         {
             DeclarationSpecifiers = declarationSpecifiers;

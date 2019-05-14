@@ -76,7 +76,10 @@ namespace MyCCompiler.AST
             Add(new Mov(Register.Esp, Register.Ebp));
 
             // Aligns the stack frame to a 16 byte boundary
-            Add(new And(new IntegerConstant(-16), Register.Esp));
+            if (node.IsMain)
+            {
+                Add(new And(new IntegerConstant(-16), Register.Esp));
+            }
 
             // Reserve space on the stack for local variables
             var stackFrameSize = node.CompoundStatement.SymbolTable.Count() * 4;
@@ -86,7 +89,10 @@ namespace MyCCompiler.AST
             _currFrameOffset = 0;
 
             // Setup GCC (optional)
-            Add(new Call(new LabeledCode("___main")));
+            if (node.IsMain)
+            {
+                Add(new Call(new LabeledCode("___main")));
+            }
 
             // Visit body
             Visit(node.CompoundStatement);
