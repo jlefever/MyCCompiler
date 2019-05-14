@@ -110,6 +110,9 @@ namespace MyCCompiler.AST
                 case IIfStatement n:
                     Visit(n);
                     break;
+                case IIterationStatement n:
+                    Visit(n);
+                    break;
                 case IReturnStatement n:
                     Visit(n);
                     break;
@@ -181,6 +184,48 @@ namespace MyCCompiler.AST
             Visit(node.Else);
 
             // Print end label
+            Add(new Label(endLabel));
+        }
+
+        private void Visit(IIterationStatement node)
+        {
+            switch (node)
+            {
+                case WhileStatement n:
+                    Visit(n);
+                    break;
+                case DoWhileStatement n:
+                    Visit(n);
+                    break;
+                case ForStatement n:
+                    throw new NotImplementedException();
+                    break;
+            }
+        }
+
+        private void Visit(WhileStatement n)
+        {
+            var loopLabel = GetNextLabel();
+            var endLabel = GetNextLabel();
+
+            Add(new Label(loopLabel));
+            Visit(n.Expression);
+            Add(new Jz(new LabeledCode(endLabel)));
+            Visit(n.Body);
+            Add(new Jmp(new LabeledCode(loopLabel)));
+            Add(new Label(endLabel));
+        }
+
+        private void Visit(DoWhileStatement n)
+        {
+            var loopLabel = GetNextLabel();
+            var endLabel = GetNextLabel();
+
+            Add(new Label(loopLabel));
+            Visit(n.Body);
+            Visit(n.Expression);
+            Add(new Jz(new LabeledCode(endLabel)));
+            Add(new Jmp(new LabeledCode(loopLabel)));
             Add(new Label(endLabel));
         }
 

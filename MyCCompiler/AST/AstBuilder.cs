@@ -372,8 +372,35 @@ namespace MyCCompiler.AST
                 return Build(context.selectionStatement());
             }
 
+            if (context.iterationStatement() != null)
+            {
+                return Build(context.iterationStatement());
+            }
+
             // Other statements not supported yet
             throw new NotImplementedException();
+        }
+
+        public static IIterationStatement Build(CParser.IterationStatementContext context)
+        {
+            var body = Build(context.statement());
+
+            if (context.GetChild(0).GetText() == "while")
+            {
+                var expression = Build(context.expression());
+                return new WhileStatement(expression, body);
+            }
+
+            if (context.GetChild(0).GetText() == "do")
+            {
+                var expression = Build(context.expression());
+                return new DoWhileStatement(expression, body);
+            }
+
+            var first = Build(context.forCondition().expression()[0]);
+            var second = Build(context.forCondition().expression()[1]);
+            var third = Build(context.forCondition().expression()[2]);
+            return new ForStatement(first, second, third, body);
         }
 
         public static IIfStatement Build(CParser.SelectionStatementContext context)

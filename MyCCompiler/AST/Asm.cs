@@ -188,6 +188,11 @@ namespace MyCCompiler.AST
         public Jne(LabeledCode destination) : base("jne", destination) { }
     }
 
+    public class Jz : UnaryInstruction
+    {
+        public Jz(LabeledCode destination) : base("jz", destination) { }
+    }
+
     public class Call : UnaryInstruction
     {
         public Call(LabeledCode destination) : base("call", destination) { }

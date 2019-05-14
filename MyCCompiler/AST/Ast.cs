@@ -22,6 +22,16 @@ namespace MyCCompiler.AST
 
     public interface IReturnStatement : IStatement { }
 
+    public interface IIterationStatement : IStatement
+    {
+        IStatement Body { get; }
+    }
+
+    public interface IWhileStatement : IIterationStatement
+    {
+        IExpression Expression { get; }
+    }
+
     public interface IIfStatement : IStatement
     {
         IExpression Expression { get; }
@@ -216,6 +226,46 @@ namespace MyCCompiler.AST
             Expression = expression;
             Body = body;
             Else = @else;
+        }
+    }
+
+    public class WhileStatement : IWhileStatement
+    {
+        public IExpression Expression { get; }
+        public IStatement Body { get; }
+
+        public WhileStatement(IExpression expression, IStatement body)
+        {
+            Expression = expression;
+            Body = body;
+        }
+    }
+
+    public class DoWhileStatement : IWhileStatement
+    {
+        public IExpression Expression { get; }
+        public IStatement Body { get; }
+
+        public DoWhileStatement(IExpression expression, IStatement body)
+        {
+            Expression = expression;
+            Body = body;
+        }
+    }
+
+    public class ForStatement : IIterationStatement
+    {
+        public IExpression FirstExpression { get; }
+        public IExpression SecondExpression { get; }
+        public IExpression ThirdExpression { get; }
+        public IStatement Body { get; }
+
+        public ForStatement(IExpression firstExpression, IExpression secondExpression, IExpression thirdExpression, IStatement body)
+        {
+            FirstExpression = firstExpression;
+            SecondExpression = secondExpression;
+            ThirdExpression = thirdExpression;
+            Body = body;
         }
     }
 

@@ -61,6 +61,9 @@ namespace MyCCompiler.AST
                 case IIfStatement n:
                     Visit(n);
                     break;
+                case IIterationStatement n:
+                    Visit(n);
+                    break;
                 case IReturnStatement n:
                     Visit(n);
                     break;
@@ -86,6 +89,23 @@ namespace MyCCompiler.AST
             if (node is IfElseStatement n)
             {
                 Visit(n.Else);
+            }
+        }
+
+        public void Visit(IIterationStatement node)
+        {
+            Visit(node.Body);
+
+            switch (node)
+            {
+                case IWhileStatement n:
+                    Visit(n.Expression);
+                    break;
+                case ForStatement n:
+                    Visit(n.FirstExpression);
+                    Visit(n.SecondExpression);
+                    Visit(n.ThirdExpression);
+                    break;
             }
         }
 
