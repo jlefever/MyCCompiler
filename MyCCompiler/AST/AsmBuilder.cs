@@ -230,12 +230,13 @@ namespace MyCCompiler.AST
 
         private void Visit(IReturnStatement node)
         {
-            if (node is ReturnVoidStatement)
+            if (node is ReturnStatement statement)
             {
-                return;
+                Visit(statement.Expression);
             }
 
-            Visit(((ReturnStatement)node).Expression);
+            Add(new Leave());
+            Add(new Ret());
         }
 
         private void Visit(CompoundStatement node)
@@ -540,7 +541,7 @@ namespace MyCCompiler.AST
                         throw new NotSupportedException();
                     }
 
-                    var offset = ((Identifier) node.Expression).Symbol.StackOffset;
+                    var offset = ((Identifier)node.Expression).Symbol.StackOffset;
                     Add(new Lea(new Memory(Register.Ebp, offset), ResultRegister));
                     break;
                 case UnaryOpKind.Dereference:

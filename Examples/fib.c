@@ -1,22 +1,16 @@
 int fib(int n)
 {
-    int f[n + 2];
-    int i;
-
-    f[0] = 0;
-    f[1] = 1;
-
-    for (i = 2; i <= n; i++)
+    if (n < 2)
     {
-        f[i] = f[i - 1] + f[i - 2];
+        return n;
     }
 
-    return f[n];
+    return fib(n - 1) + fib(n - 2);
 }
 
 int main()
 {
-    int n = 9;
-    printf("%d", fib(n));
+    int n = 10;
+    printf("The number is %d", fib(n));
     return 0;
 }
