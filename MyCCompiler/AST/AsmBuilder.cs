@@ -199,7 +199,6 @@ namespace MyCCompiler.AST
                     break;
                 case ForStatement n:
                     throw new NotImplementedException();
-                    break;
             }
         }
 
@@ -383,7 +382,8 @@ namespace MyCCompiler.AST
                     Add(new Add(AltRegister, ResultRegister));
                     return;
                 case BinaryOpKind.Subtraction:
-                    Add(new Sub(AltRegister, ResultRegister));
+                    Add(new Sub(ResultRegister, AltRegister));
+                    Add(new Mov(AltRegister, ResultRegister));
                     return;
                 case BinaryOpKind.Multiplication:
                     Add(new Imul(AltRegister, ResultRegister));
