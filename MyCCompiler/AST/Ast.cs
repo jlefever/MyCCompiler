@@ -2,21 +2,19 @@
 
 namespace MyCCompiler.AST
 {
-    public interface INode { }
+    public interface IExternal { }
 
-    public interface IExternal : INode { }
+    public interface IStatement { }
 
-    public interface IStatement : INode { }
+    public interface IInitDeclarator { }
 
-    public interface IInitDeclarator : INode { }
+    public interface IDirectDeclarator { }
 
-    public interface IDirectDeclarator : INode { }
-
-    public interface IDeclarationSpecifier : INode { }
+    public interface IDeclarationSpecifier { }
 
     public interface ITypeSpecifier : IDeclarationSpecifier { }
 
-    public interface IExpression : INode { }
+    public interface IExpression { }
 
     public interface IPrimaryExpression : IExpression { }
 
@@ -38,7 +36,7 @@ namespace MyCCompiler.AST
         IStatement Body { get; }
     }
 
-    public class CompilationUnit : INode
+    public class CompilationUnit
     {
         public LinkedList<IExternal> Externals { get; }
 
@@ -138,7 +136,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class Pointer : INode
+    public class Pointer
     {
         public ISet<Qualifier> Qualifiers { get; }
 
@@ -153,7 +151,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class DeclarationSpecifiers : INode
+    public class DeclarationSpecifiers
     {
         public LinkedList<ITypeSpecifier> TypeSpecifiers { get; }
         public ISet<Storage> Storages { get; }
@@ -179,7 +177,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class ParameterList : INode
+    public class ParameterList
     {
         public LinkedList<Parameter> Parameters { get; }
         public bool Variadic { get; }
@@ -191,7 +189,7 @@ namespace MyCCompiler.AST
         }
     }
 
-    public class Parameter : INode
+    public class Parameter
     {
         public DeclarationSpecifiers DeclarationSpecifiers { get; }
         public Declarator Declarator { get; }
