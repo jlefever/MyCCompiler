@@ -369,213 +369,39 @@ namespace MyCCompiler.AST
 
     public class Qualifier : IDeclarationSpecifier
     {
-        public bool Equals(Qualifier other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
+        public static Qualifier Const = new Qualifier();
+        public static Qualifier Volatile = new Qualifier();
+        public static Qualifier Restrict = new Qualifier();
+        public static Qualifier Atomic = new Qualifier();
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return QualifierKind == other.QualifierKind;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != typeof(Qualifier))
-            {
-                return false;
-            }
-
-            return Equals((Qualifier)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)QualifierKind;
-        }
-
-        public static bool operator ==(Qualifier left, Qualifier right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(Qualifier left, Qualifier right)
-        {
-            return !Equals(left, right);
-        }
-
-        public QualifierKind QualifierKind { get; }
-
-        public Qualifier(QualifierKind qualifierKind)
-        {
-            QualifierKind = qualifierKind;
-        }
+        private Qualifier() { }
     }
 
     public class Storage : IDeclarationSpecifier
     {
-        public bool Equals(Storage other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
+        public static Storage Auto = new Storage();
+        public static Storage Register = new Storage();
+        public static Storage Static = new Storage();
+        public static Storage Extern = new Storage();
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return StorageKind == other.StorageKind;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != typeof(Storage))
-            {
-                return false;
-            }
-
-            return Equals((Storage)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)StorageKind;
-        }
-
-        public static bool operator ==(Storage left, Storage right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(Storage left, Storage right)
-        {
-            return !Equals(left, right);
-        }
-
-        public StorageKind StorageKind { get; }
-
-        public Storage(StorageKind storageKind)
-        {
-            StorageKind = storageKind;
-        }
+        private Storage() { }
     }
 
     public class TypeKeyword : ITypeSpecifier
     {
-        public bool Equals(TypeKeyword other)
-        {
-            if (ReferenceEquals(null, other))
-            {
-                return false;
-            }
+        public static TypeKeyword Void = new TypeKeyword();
+        public static TypeKeyword Signed = new TypeKeyword();
+        public static TypeKeyword Unsigned = new TypeKeyword();
+        public static TypeKeyword Short = new TypeKeyword();
+        public static TypeKeyword Long = new TypeKeyword();
+        public static TypeKeyword Char = new TypeKeyword();
+        public static TypeKeyword Int = new TypeKeyword();
+        public static TypeKeyword Float = new TypeKeyword();
+        public static TypeKeyword Double = new TypeKeyword();
+        public static TypeKeyword Bool = new TypeKeyword();
+        public static TypeKeyword Complex = new TypeKeyword();
 
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return TypeKeywordKind == other.TypeKeywordKind;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != typeof(TypeKeyword))
-            {
-                return false;
-            }
-
-            return Equals((TypeKeyword)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)TypeKeywordKind;
-        }
-
-        public static bool operator ==(TypeKeyword left, TypeKeyword right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(TypeKeyword left, TypeKeyword right)
-        {
-            return !Equals(left, right);
-        }
-
-        public TypeKeywordKind TypeKeywordKind { get; }
-
-        public TypeKeyword(TypeKeywordKind typeKeywordKind)
-        {
-            TypeKeywordKind = typeKeywordKind;
-        }
-    }
-
-    public enum QualifierKind
-    {
-        Const,
-        Volatile,
-        Restrict,
-        Atomic
-    }
-
-    public enum StorageKind
-    {
-        Auto,
-        Register,
-        Static,
-        Extern
-    }
-
-    public enum TypeKeywordKind
-    {
-        Void,
-        Signed,
-        Unsigned,
-        Short,
-        Long,
-        Char,
-        Int,
-        Float,
-        Double,
-        Bool,
-        Complex
+        private TypeKeyword() { }
     }
 
     public enum AssignmentKind

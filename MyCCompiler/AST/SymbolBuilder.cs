@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static MyCCompiler.AST.TypeKeywordKind;
 
 namespace MyCCompiler.AST
 {
@@ -189,14 +188,14 @@ namespace MyCCompiler.AST
 
         public IPointable BuildDeclarationType(DeclarationSpecifiers node)
         {
-            var keywords = new LinkedList<TypeKeywordKind>();
+            var keywords = new LinkedList<TypeKeyword>();
             var pointers = new LinkedList<ISet<Qualifier>>();
 
             foreach (var typeSpecifier in node.TypeSpecifiers)
             {
                 if (typeSpecifier is TypeKeyword typeKeyword)
                 {
-                    keywords.AddLast(typeKeyword.TypeKeywordKind);
+                    keywords.AddLast(typeKeyword);
                 }
                 else
                 {
@@ -207,7 +206,7 @@ namespace MyCCompiler.AST
                         ts = tswp.TypeSpecifier;
                     }
 
-                    keywords.AddLast(((TypeKeyword)ts).TypeKeywordKind);
+                    keywords.AddLast(ts as TypeKeyword);
                 }
             }
 
@@ -299,43 +298,43 @@ namespace MyCCompiler.AST
             _currSymbolTable = _currSymbolTable.Parent;
         }
 
-        private static readonly IDictionary<TypeKeywordKind[], PrimitiveKind> PrimitiveKindMap =
-            new Dictionary<TypeKeywordKind[], PrimitiveKind>(new EqualityComparer())
+        private static readonly IDictionary<TypeKeyword[], PrimitiveKind> PrimitiveKindMap =
+            new Dictionary<TypeKeyword[], PrimitiveKind>(new EqualityComparer())
             {
-                { new [] { TypeKeywordKind.Char }, PrimitiveKind.Char },
-                { new [] { Signed, TypeKeywordKind.Char }, PrimitiveKind.SignedChar },
-                { new [] { Unsigned, TypeKeywordKind.Char}, PrimitiveKind.UnsignedChar },
-                { new [] { Short }, PrimitiveKind.Short },
-                { new [] { Short, Int }, PrimitiveKind.Short },
-                { new [] { Signed, Short }, PrimitiveKind.Short },
-                { new [] { Signed, Short, Int }, PrimitiveKind.Short },
-                { new [] { Unsigned, Short }, PrimitiveKind.UnsignedShort },
-                { new [] { Unsigned, Short, Int }, PrimitiveKind.UnsignedShort },
-                { new [] { Int }, PrimitiveKind.Int },
-                { new [] { Signed }, PrimitiveKind.Int },
-                { new [] { Signed, Int }, PrimitiveKind.Int },
-                { new [] { Unsigned }, PrimitiveKind.UnsignedInt },
-                { new [] { Unsigned, Int }, PrimitiveKind.UnsignedInt },
-                { new [] { Long }, PrimitiveKind.Long },
-                { new [] { Long, Int }, PrimitiveKind.Long },
-                { new [] { Signed, Long }, PrimitiveKind.Long },
-                { new [] { Signed, Long, Int }, PrimitiveKind.Long },
-                { new [] { Unsigned, Long }, PrimitiveKind.UnsignedLong },
-                { new [] { Unsigned, Long, Int }, PrimitiveKind.UnsignedLong },
-                { new [] { Long, Long }, PrimitiveKind.LongLong },
-                { new [] { Long, Long, Int }, PrimitiveKind.LongLong },
-                { new [] { Signed, Long, Long }, PrimitiveKind.LongLong },
-                { new [] { Signed, Long, Long, Int }, PrimitiveKind.LongLong },
-                { new [] { Unsigned, Long, Long }, PrimitiveKind.UnsignedLongLong },
-                { new [] { Unsigned, Long, Long, Int }, PrimitiveKind.UnsignedLongLong },
-                { new [] { Float }, PrimitiveKind.Float },
-                { new [] { TypeKeywordKind.Double }, PrimitiveKind.Double },
-                { new [] { Long, TypeKeywordKind.Double }, PrimitiveKind.LongDouble }
+                { new [] { TypeKeyword.Char }, PrimitiveKind.Char },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Char }, PrimitiveKind.SignedChar },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Char}, PrimitiveKind.UnsignedChar },
+                { new [] { TypeKeyword.Short }, PrimitiveKind.Short },
+                { new [] { TypeKeyword.Short, TypeKeyword.Int }, PrimitiveKind.Short },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Short }, PrimitiveKind.Short },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Short, TypeKeyword.Int }, PrimitiveKind.Short },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Short }, PrimitiveKind.UnsignedShort },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Short, TypeKeyword.Int }, PrimitiveKind.UnsignedShort },
+                { new [] { TypeKeyword.Int }, PrimitiveKind.Int },
+                { new [] { TypeKeyword.Signed }, PrimitiveKind.Int },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Int }, PrimitiveKind.Int },
+                { new [] { TypeKeyword.Unsigned }, PrimitiveKind.UnsignedInt },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Int }, PrimitiveKind.UnsignedInt },
+                { new [] { TypeKeyword.Long }, PrimitiveKind.Long },
+                { new [] { TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.Long },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Long }, PrimitiveKind.Long },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.Long },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Long }, PrimitiveKind.UnsignedLong },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.UnsignedLong },
+                { new [] { TypeKeyword.Long, TypeKeyword.Long }, PrimitiveKind.LongLong },
+                { new [] { TypeKeyword.Long, TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.LongLong },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Long, TypeKeyword.Long }, PrimitiveKind.LongLong },
+                { new [] { TypeKeyword.Signed, TypeKeyword.Long, TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.LongLong },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Long, TypeKeyword.Long }, PrimitiveKind.UnsignedLongLong },
+                { new [] { TypeKeyword.Unsigned, TypeKeyword.Long, TypeKeyword.Long, TypeKeyword.Int }, PrimitiveKind.UnsignedLongLong },
+                { new [] { TypeKeyword.Float }, PrimitiveKind.Float },
+                { new [] { TypeKeyword.Double }, PrimitiveKind.Double },
+                { new [] { TypeKeyword.Long, TypeKeyword.Double }, PrimitiveKind.LongDouble }
             };
 
-        private class EqualityComparer : IEqualityComparer<TypeKeywordKind[]>
+        private class EqualityComparer : IEqualityComparer<TypeKeyword[]>
         {
-            public bool Equals(TypeKeywordKind[] a, TypeKeywordKind[] b)
+            public bool Equals(TypeKeyword[] a, TypeKeyword[] b)
             {
                 if (a == b)
                 {
@@ -363,7 +362,7 @@ namespace MyCCompiler.AST
                 return true;
             }
 
-            public int GetHashCode(TypeKeywordKind[] a)
+            public int GetHashCode(TypeKeyword[] a)
             {
                 return a.Aggregate(0, (current, item) => current ^ item.GetHashCode());
             }

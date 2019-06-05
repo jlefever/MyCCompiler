@@ -114,7 +114,7 @@ namespace MyCCompiler.AST
         public static Storage Build(CParser.StorageClassSpecifierContext context)
         {
             // TODO: Handle typedef
-            return new Storage(StorageKindMap[context.GetText()]);
+            return StorageMap[context.GetText()];
         }
 
         public static ITypeSpecifier Build(CParser.TypeSpecifierContext context)
@@ -146,7 +146,7 @@ namespace MyCCompiler.AST
                 return new TypeSpecifierWithPointer(typeSpecifier, pointer);
             }
 
-            return new TypeKeyword(TypeKeywordKindMap[context.GetText()]);
+            return TypeKeywordMap[context.GetText()];
         }
 
         // This is a list grammar. Consider using generics.
@@ -311,7 +311,7 @@ namespace MyCCompiler.AST
 
         public static Qualifier Build(CParser.TypeQualifierContext context)
         {
-            return new Qualifier(QualifierKindMap[context.GetText()]);
+            return QualifierMap[context.GetText()];
         }
 
         public static CompoundStatement Build(CParser.CompoundStatementContext context)
@@ -710,35 +710,35 @@ namespace MyCCompiler.AST
             return list;
         }
 
-        private static readonly IDictionary<string, QualifierKind> QualifierKindMap = new Dictionary<string, QualifierKind>
+        private static readonly IDictionary<string, Qualifier> QualifierMap = new Dictionary<string, Qualifier>
         {
-            { "const", QualifierKind.Const },
-            { "volatile", QualifierKind.Volatile },
-            { "restrict", QualifierKind.Restrict },
-            { "_Atomic", QualifierKind.Atomic }
+            { "const", Qualifier.Const },
+            { "volatile", Qualifier.Volatile },
+            { "restrict", Qualifier.Restrict },
+            { "_Atomic", Qualifier.Atomic }
         };
 
-        private static readonly IDictionary<string, StorageKind> StorageKindMap = new Dictionary<string, StorageKind>
+        private static readonly IDictionary<string, Storage> StorageMap = new Dictionary<string, Storage>
         {
-            { "auto", StorageKind.Auto },
-            { "register", StorageKind.Register },
-            { "static", StorageKind.Static },
-            { "extern", StorageKind.Extern }
+            { "auto", Storage.Auto },
+            { "register", Storage.Register },
+            { "static", Storage.Static },
+            { "extern", Storage.Extern }
         };
 
-        private static readonly IDictionary<string, TypeKeywordKind> TypeKeywordKindMap = new Dictionary<string, TypeKeywordKind>
+        private static readonly IDictionary<string, TypeKeyword> TypeKeywordMap = new Dictionary<string, TypeKeyword>
         {
-            { "void", TypeKeywordKind.Void },
-            { "char", TypeKeywordKind.Char },
-            { "short", TypeKeywordKind.Short },
-            { "int", TypeKeywordKind.Int },
-            { "long", TypeKeywordKind.Long },
-            { "float", TypeKeywordKind.Float },
-            { "double", TypeKeywordKind.Double },
-            { "signed", TypeKeywordKind.Signed },
-            { "unsigned", TypeKeywordKind.Unsigned },
-            { "_Bool", TypeKeywordKind.Bool },
-            { "_Complex", TypeKeywordKind.Complex }
+            { "void", TypeKeyword.Void },
+            { "char", TypeKeyword.Char },
+            { "short", TypeKeyword.Short },
+            { "int", TypeKeyword.Int },
+            { "long", TypeKeyword.Long },
+            { "float", TypeKeyword.Float },
+            { "double", TypeKeyword.Double },
+            { "signed", TypeKeyword.Signed },
+            { "unsigned", TypeKeyword.Unsigned },
+            { "_Bool", TypeKeyword.Bool },
+            { "_Complex", TypeKeyword.Complex }
         };
 
         private static readonly IDictionary<string, AssignmentKind> AssignmentKindMap = new Dictionary<string, AssignmentKind>
