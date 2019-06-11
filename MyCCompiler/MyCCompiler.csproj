@@ -49,15 +49,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\AsmBuilder.cs" />
-    <Compile Include="AST\AstBuilder.cs" />
-    <Compile Include="AST\Ast.cs" />
-    <Compile Include="AST\Asm.cs" />
-    <Compile Include="AST\Symbol.cs" />
-    <Compile Include="AST\SymbolBuilder.cs" />
+    <Compile Include="Compiler\AsmBuilder.cs" />
+    <Compile Include="Compiler\AstBuilder.cs" />
+    <Compile Include="Compiler\Ast.cs" />
+    <Compile Include="Compiler\Asm.cs" />
+    <Compile Include="Compiler\AstListener.cs" />
+    <Compile Include="Compiler\AstWalker.cs" />
+    <Compile Include="Compiler\Symbol.cs" />
+    <Compile Include="Compiler\SymbolBuilder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AST\SymbolTable.cs" />
+    <Compile Include="Compiler\SymbolTable.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

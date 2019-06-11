@@ -1,6 +1,6 @@
 ﻿using System.Resources;
 
-namespace MyCCompiler.AST
+namespace MyCCompiler.Compiler
 {
     public interface IOperand { }
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace MyCCompiler.AST
+namespace MyCCompiler.Compiler
 {
     public class SymbolBuilder
     {

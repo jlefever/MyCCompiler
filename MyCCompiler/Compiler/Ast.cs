@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MyCCompiler.AST
+namespace MyCCompiler.Compiler
 {
     public interface IExternal { }
 
