@@ -53,8 +53,6 @@
     <Compile Include="Compiler\AstBuilder.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\Asm.cs" />
-    <Compile Include="Compiler\AstListener.cs" />
-    <Compile Include="Compiler\AstWalker.cs" />
     <Compile Include="Compiler\Symbol.cs" />
     <Compile Include="Compiler\SymbolBuilder.cs" />
     <Compile Include="Program.cs" />
