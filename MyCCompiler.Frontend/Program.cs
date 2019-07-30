@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace MyCCompiler.Frontend
 {
@@ -46,7 +49,20 @@ namespace MyCCompiler.Frontend
 
         private static void Run(string text)
         {
-            throw new NotImplementedException();
+            var scanner = new Scanner(text);
+            var tokens = scanner.ScanTokens();
+            Console.WriteLine(string.Join("", tokens));
+        }
+
+        private static void Report(int line, string where, string message)
+        {
+            Console.WriteLine($"[line {line}] Error{where}: {message}");
+            _hadError = true;
+        }
+
+        public static void Error(int line, string message)
+        {
+            Report(line, "", message);
         }
     }
 }

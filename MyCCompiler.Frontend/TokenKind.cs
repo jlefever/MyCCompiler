@@ -9,18 +9,18 @@
         // One, two, or three character tokens
         Equal, EqualEqual,
         Bang, BangEqual,
-        Greater, GreaterEqual, GreaterGreater, GreaterGreaterEqual,
-        Less, LessEqual, LessLess, LessLessEqual,
         Star, StarEqual,
         Slash, SlashEqual,
         Percent, PercentEqual,
-        Plus, PlusEqual, PlusPlus,
-        Minus, MinusEqual, MinusMinus, Arrow, // AKA "->"
-        Amp, AmpEqual, AmpAmp,
-        Pipe, PipeEqual, PipePipe,
         Caret, CaretEqual,
         Dot, DotDotDot,
-        
+        Plus, PlusEqual, PlusPlus,
+        Amp, AmpEqual, AmpAmp,
+        Pipe, PipeEqual, PipePipe,
+        Greater, GreaterEqual, GreaterGreater, GreaterGreaterEqual,
+        Less, LessEqual, LessLess, LessLessEqual,
+        Minus, MinusEqual, MinusMinus, Arrow, // AKA "->"
+
         // Literals
         Identifier, String, Integer, Floating, Character,
 

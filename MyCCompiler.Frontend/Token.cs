@@ -1,4 +1,7 @@
-﻿namespace MyCCompiler.Frontend
+﻿using System;
+using System.Text;
+
+namespace MyCCompiler.Frontend
 {
     public class Token
     {
@@ -17,7 +20,20 @@
 
         public override string ToString()
         {
-            return Kind + " " + Lexeme + " " + Literal;
+            var builder = new StringBuilder("[" + Kind);
+
+            if (!string.IsNullOrEmpty(Lexeme))
+            {
+                builder.Append(" " + Lexeme);
+            }
+
+            if (Literal != null)
+            {
+                builder.Append(" " + Literal);
+            }
+
+            builder.Append("]");
+            return builder.ToString();
         }
     }
 }
