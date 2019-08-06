@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace MyCCompiler.Frontend
 {
@@ -51,7 +49,15 @@ namespace MyCCompiler.Frontend
         {
             var scanner = new Scanner(text);
             var tokens = scanner.ScanTokens();
-            Console.WriteLine(string.Join("", tokens));
+            var parser = new Parser(tokens.ToArray());
+            var expr = parser.Expression();
+
+            if (expr != null)
+            {
+                Console.WriteLine(new AstPrinter().Print(expr));
+            }
+
+            //Console.WriteLine(string.Join("", tokens));
         }
 
         private static void Report(int line, string where, string message)
@@ -63,6 +69,18 @@ namespace MyCCompiler.Frontend
         public static void Error(int line, string message)
         {
             Report(line, "", message);
+        }
+
+        public static void Error(Token token, string message)
+        {
+            if (token.Kind == TokenKind.Eof)
+            {
+                Report(token.Line, " at end", message);
+            }
+            else
+            {
+                Report(token.Line, " at '" + token.Lexeme + "'", message);
+            }
         }
     }
 }
